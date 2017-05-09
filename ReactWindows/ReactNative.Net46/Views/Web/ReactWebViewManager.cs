@@ -174,7 +174,7 @@ namespace ReactNative.Views.Web
         {
             base.OnDropViewInstance(reactContext, view);
             view.LoadCompleted -= OnLoadCompleted;
-            view.Navigated -= OnNavigationStarting;
+            view.Navigating -= BeforeNavigationStarting;
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace ReactNative.Views.Web
         {
             base.AddEventEmitters(reactContext, view);
             view.LoadCompleted += OnLoadCompleted;
-            view.Navigated += OnNavigationStarting;
+            view.Navigating += BeforeNavigationStarting;
         }
 
         private void OnLoadCompleted(object sender, NavigationEventArgs e)
@@ -226,6 +226,25 @@ namespace ReactNative.Views.Web
             {
                 LoadFailed(webView, "Unknown Error loading webview.", null);
             }
+        }
+
+        private static void BeforeNavigationStarting(object sender, NavigatingCancelEventArgs e)
+        {
+            var webView = (WebBrowser)sender;
+
+            HideScriptErrors(webView, true);
+
+            webView.GetReactContext().GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(
+                    new WebViewLoadingEvent(
+                         webView.GetTag(),
+                         "Start",
+                         e.Uri?.ToString(),
+                         true,
+                         "Title Unavailable",
+                         webView.CanGoBack,
+                         webView.CanGoForward));
         }
 
         private static void OnNavigationStarting(object sender, NavigationEventArgs e)
