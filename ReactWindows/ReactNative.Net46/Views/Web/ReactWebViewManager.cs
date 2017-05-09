@@ -112,7 +112,15 @@ namespace ReactNative.Views.Web
                 {
                     using (var request = new HttpRequestMessage())
                     {
-                        request.RequestUri = new Uri(uri);
+                        try
+                        {
+                            request.RequestUri = new Uri(uri);
+                        }
+                        catch(Exception)
+                        {
+                            view.Navigate(new Uri(BLANK_URL));
+                            return;
+                        }
 
                         var method = source.Value<string>("method");
                         var headers = (string)source.GetValue("headers", StringComparison.Ordinal);
