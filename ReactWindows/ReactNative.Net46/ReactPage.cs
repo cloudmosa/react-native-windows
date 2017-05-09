@@ -18,6 +18,8 @@ namespace ReactNative
         private readonly Lazy<IReactInstanceManager> _reactInstanceManager;
         private readonly Lazy<ReactRootView> _rootView;
 
+        public event EventHandler<EventArgs> ReactContextInitialized;
+
         /// <summary>
         /// Instantiates the <see cref="ReactPage"/>.
         /// </summary>
@@ -28,6 +30,8 @@ namespace ReactNative
                 DispatcherHelpers.CurrentDispatcher = base.Dispatcher;
 
                 var reactInstanceManager = CreateReactInstanceManager();
+
+                reactInstanceManager.ReactContextInitialized += OnReactContextInitialized;
 
                 return reactInstanceManager;
             });
@@ -42,7 +46,15 @@ namespace ReactNative
             });
         }
 
-        private IReactInstanceManager ReactInstanceManager => _reactInstanceManager.Value;
+        private void OnReactContextInitialized(object sender, ReactContextInitializedEventArgs e)
+        {
+            ReactContextInitialized?.Invoke(this, EventArgs.Empty);
+            // NOTE: ReactContextInitialized event only fire once. Clear handler to prevent it blocked gc.
+            ReactContextInitialized = null;
+            ReactInstanceManager.ReactContextInitialized -= OnReactContextInitialized;
+        }
+
+        public IReactInstanceManager ReactInstanceManager => _reactInstanceManager.Value;
 
         /// <summary>
         /// The custom path of the bundle file.
