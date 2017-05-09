@@ -23,7 +23,9 @@ namespace ReactNative.DevSupport
     class DevSupportManager : IDevSupportManager, IDisposable
     {
         private const int NativeErrorCookie = -1;
-        private const string JSBundleFileName = "ReactNativeDevBundle.js";
+
+        private static int _instanceCount = 0;
+        private readonly string JSBundleFileName = String.Format("ReactNativeDevBundle-{0}.js", _instanceCount++);
 
 #if WINDOWS_UWP
         private readonly ShakeAccelerometer _accelerometer = ShakeAccelerometer.Instance;
