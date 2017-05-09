@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Net.Http;
 using System.Windows.Navigation;
 using static System.FormattableString;
+using System.Reflection;
 
 namespace ReactNative.Views.Web
 {
@@ -231,6 +232,8 @@ namespace ReactNative.Views.Web
         {
             var webView = (WebBrowser)sender;
 
+            HideScriptErrors(webView, true);
+
             webView.GetReactContext().GetNativeModule<UIManagerModule>()
                 .EventDispatcher
                 .DispatchEvent(
@@ -270,5 +273,20 @@ namespace ReactNative.Views.Web
                         status,
                         message));
         }
+
+        // Hack to hide script error message.
+        // Author: Wolfie5
+        // Ref: https://social.msdn.microsoft.com/Forums/vstudio/en-US/4f686de1-8884-4a8d-8ec5-ae4eff8ce6db/new-wpf-webbrowser-how-do-i-suppress-script-errors?forum=wpf
+        private static void HideScriptErrors(WebBrowser wb, bool Hide)
+        {
+            FieldInfo fiComWebBrowser = typeof(WebBrowser).GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fiComWebBrowser == null)
+                return;
+            object objComWebBrowser = fiComWebBrowser.GetValue(wb);
+            if (objComWebBrowser == null)
+                return;
+            objComWebBrowser.GetType().InvokeMember("Silent", BindingFlags.SetProperty, null, objComWebBrowser, new object[] { Hide });
+        }
+
     }
 }
