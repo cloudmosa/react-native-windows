@@ -111,8 +111,11 @@ namespace ReactNative.UIManager
             new List<int>
             {
                 EdgeSpacing.All,
-                EdgeSpacing.Start,
-                EdgeSpacing.End,
+
+                // NOTE(suyuan): Fix bug that style borderWidthLeft and borderWidthRight not work.
+                EdgeSpacing.Left,  // EdgeSpacing.Start,
+                EdgeSpacing.Right, // EdgeSpacing.End,
+
                 EdgeSpacing.Top,
                 EdgeSpacing.Bottom,
             };
