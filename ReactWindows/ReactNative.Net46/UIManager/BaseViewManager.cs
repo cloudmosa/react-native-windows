@@ -179,6 +179,10 @@ namespace ReactNative.UIManager
             var matrix = transform.Matrix;
             matrix.OffsetX = projectionMatrix.OffsetX;
             matrix.OffsetY = projectionMatrix.OffsetY;
+            matrix.M11 = projectionMatrix.M11;
+            matrix.M12 = projectionMatrix.M12;
+            matrix.M21 = projectionMatrix.M21;
+            matrix.M22 = projectionMatrix.M22;
             transform.Matrix = matrix;
             view.RenderTransform = transform;
         }
@@ -188,6 +192,8 @@ namespace ReactNative.UIManager
             // Matrix3D is a struct and passed-by-value. As such, we can modify
             // the values in the matrix without affecting the caller.
             matrix.OffsetX = matrix.OffsetY = 0;
+            matrix.M11 = matrix.M22 = 1;
+            matrix.M12 = matrix.M21 = 0;
             return matrix.IsIdentity;
         }
 
