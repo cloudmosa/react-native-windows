@@ -520,6 +520,11 @@ namespace ReactNative.UIManager
         {
             var content = (FrameworkElement)_window.Content;
             double scale = 1.0;
+            IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(_window).Handle;
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(hwnd))
+            {
+                scale = g.DpiX / 96;
+            }
 
             return new Dictionary<string, object>
             {
