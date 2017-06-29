@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace ReactNative.UIManager
 {
@@ -14,7 +15,9 @@ namespace ReactNative.UIManager
         // !!! Keep in sync with s_layoutOnlyProperties below !!!
         public const string AlignItems = "alignItems";
         public const string AlignSelf = "alignSelf";
+        public const string AlignContent = "alignContent";
         public const string Overflow = "overflow";
+        public const string Display = "display";
         public const string Bottom = "bottom";
         public const string Collapsible = "collapsable";
         public const string Flex = "flex";
@@ -54,7 +57,10 @@ namespace ReactNative.UIManager
         public const string MaxHeight = "maxHeight";
 
         public const string AspectRatio = "aspectRatio";
-      
+
+        // Props that sometimes may prevent us from collapsing views
+        public static string PointerEvents = "pointerEvents";
+
         // Properties that affect more than just layout
         public const string Disabled = "disabled";
         public const string BackgroundColor = "backgroundColor";
@@ -65,7 +71,6 @@ namespace ReactNative.UIManager
         public const string FontFamily = "fontFamily";
         public const string LetterSpacing = "letterSpacing";
         public const string LineHeight = "lineHeight";
-        public const string NeedsOffScreenAlphaCompositing = "needsOffscreenAlphaCompositing";
         public const string NumberOfLines = "numberOfLines";
         public const string Value = "value";
         public const string ResizeMode = "resizeMode";
@@ -111,11 +116,8 @@ namespace ReactNative.UIManager
             new List<int>
             {
                 EdgeSpacing.All,
-
-                // NOTE(suyuan): Fix bug that style borderWidthLeft and borderWidthRight not work.
-                EdgeSpacing.Left,  // EdgeSpacing.Start,
-                EdgeSpacing.Right, // EdgeSpacing.End,
-
+                EdgeSpacing.Left,
+                EdgeSpacing.Right,
                 EdgeSpacing.Top,
                 EdgeSpacing.Bottom,
             };
@@ -140,10 +142,15 @@ namespace ReactNative.UIManager
                 AlignSelf,
                 Collapsible,
                 Flex,
+                FlexBasis,
                 FlexDirection,
+                FlexGrow,
+                FlexShrink,
                 FlexWrap,
                 JustifyContent,
                 Overflow,
+                AlignContent,
+                Display,
 
                 /* position */
                 Position,
@@ -182,13 +189,24 @@ namespace ReactNative.UIManager
         /// <summary>
         /// Checks if the property key is layout-only.
         /// </summary>
-        /// <param name="key">The key.</param>
+        /// <param name="props">The prop collection.</param>
+        /// <param name="prop">The prop name.</param>
         /// <returns>
         /// <b>true</b> if the property is layout-only, <b>false</b> otherwise.
         /// </returns>
-        public static bool IsLayoutOnly(string key)
+        public static bool IsLayoutOnly(ReactStylesDiffMap props, string prop)
         {
-            return s_layoutOnlyProperties.Contains(key);
+            if (s_layoutOnlyProperties.Contains(prop))
+            {
+                return true;
+            }
+            else if (PointerEvents == prop)
+            {
+                var value = props.GetProperty(prop).Value<string>();
+                return value == "auto" || value == "box-none";
+            }
+
+            return false;
         }
     }
 }

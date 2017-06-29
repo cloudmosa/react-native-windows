@@ -10,6 +10,7 @@
  * @flow
  */
 'use strict';
+
 type ChangeEventName = $Enum<{
   change: string,
 }>;
@@ -18,7 +19,7 @@ var warning = require('fbjs/lib/warning');
 
 var AccessibilityInfo = {
 
-  fetch: function(): Promise<bool> {
+  fetch: function(): Promise<*> {
     return new Promise((resolve, reject) => {
       reject('AccessibilityInfo is not supported on this platform.');
     });
