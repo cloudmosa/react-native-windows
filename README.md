@@ -1,4 +1,4 @@
-# React Native plugin for Universal Windows Platform (UWP)
+﻿# React Native plugin for Universal Windows Platform (UWP)
 
 ![Hero Image with Logo](./.github/hero.png)
 
@@ -27,25 +27,33 @@ See the official [React Native website](https://facebook.github.io/react-native/
 
 ## System Requirements
 
-- You can build and deploy React Native Windows apps on the Pro or Enterprise versions of Windows 7 SP1, Windows 8.1, or Windows 10 
+- You can build and deploy React Native Windows apps on the Pro or Enterprise versions of Windows 7 SP1, Windows 8.1, or Windows 10
 - *Note:* You cannot run the emulators and some other developer tooling on the "Starter" or "Home" versions of these operating systems
 - You can run React Native Windows UWP apps only on Windows 10 devices, but React Native Windows WPF apps will run on Windows 7-10 so long as .NET 4.6 is installed on the end user's machine
-- Download [Visual Studio 2015 Community](https://www.visualstudio.com/vs/older-downloads/)
+- Download [Visual Studio 2017 Community or Greater](https://www.visualstudio.com/downloads/). (Visual Studio 2015 support is being deprecated.)
 - - You will need to start Visual Studio after it is installed to do some final setup before it can be used to build or run your React Native Windows application
 - [Windows 10 SDK Build 14393](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive)
 
-*Note*: Development on React Native Windows itself currently requires Visual Studio 2015. It is not supported with Visual Studio 2017 or with VS Code, but we will gladly accept pull requests to enable a great developer experience in those environments.
+*Note*: Development on React Native Windows itself currently requires Visual Studio 2017. It is not supported with VS Code, but we will gladly accept pull requests to enable a great developer experience in those environments.
 
 ## Getting Started
 
 - Follow the [Getting Started guide](http://facebook.github.io/react-native/docs/getting-started.html) to install React Native and its dependencies.
 - Change your working directory to the project directory you specified in the `react-native init` command from the [Getting Started guide](http://facebook.github.io/react-native/docs/getting-started.html) (e.g., `cd AwesomeProject`).
-- Install [rnpm-plugin-windows](https://www.npmjs.com/package/rnpm-plugin-windows) from NPM (i.e., `npm install --save-dev rnpm-plugin-windows` or `yarn add rnpm-plugin-windows` if you have Yarn installed).
+- Install [rnpm-plugin-windows](https://www.npmjs.com/package/rnpm-plugin-windows) from NPM (i.e., `npm install --save-dev rnpm-plugin-windows` or `yarn add rnpm-plugin-windows --dev` if you have Yarn installed).
 - Initialize Windows project with `react-native windows` command in the project directory.
 - *Note*: You will need to install the [requirements](#system-requirements) before you can build and run your application.
-- Open the solution file in the application folder in Visual Studio (e.g., `AwesomeProject/windows/AwesomeProject.sln`) 
+- Open the solution file in the application folder in Visual Studio (e.g., `AwesomeProject/windows/AwesomeProject.sln`)
 - *Note*: If this is your first time doing UWP development on the computer you're using, you may be asked to install additional UWP tooling. After opening the solution, right click the Solution in the Solution Explorer and select the option labeled "Install Missing Components". You may have to shutdown Visual Studio to continue the installation.
-- Select the "Debug" configuration and the "x64" platform from the combo box controls to the left of the Run button and underneath the Team and Tools menu item. 
+- *Note*: If you are using Visual Studio 2017, you will need to retarget the ChakraBridge project. Right click the ChakraBridge project:
+    - If there is not a retarget option:
+        - Select "Reload", and the Visual Studio installer will open.
+        - Make sure to close Visual Studio before installing
+        - Make sure the 10.0.10586.0 Windows 10 SDK is selected along with any other preselected components, and click "Modify" in the installer to install the components
+        - Retargeting the ChakraBridge project should be possible, so proceed to the next instructions regarding if there is a retarget option
+    - If there is a retarget option:
+        - Retarget by right clicking on the ChakraBridge project in the Solution Explorer and selecting "Retarget Projects" and pressing okay on the popup dialog (Platform Toolset should say "Upgrade to v141" in the dialog).
+- Select the "Debug" configuration and the "x64" platform from the combo box controls to the left of the Run button and underneath the Team and Tools menu item.
 - *Note:* If you are running on, or targeting, an x86 platform select "x86" instead. If you are deploying to Windows 10 Phone, select ARM.
 - Click the Run button to the right of the platform combo box control, or select the "Debug"->"Start without Debugging" menu item.
 - You should now see a typical React Native app running on Windows that is showing an error saying it needs to contact the dev server. Almost there!
@@ -102,19 +110,15 @@ npm install
 ```
 - - *Note:* If you just want to get started with developing your own app, read [Getting Started with App Development](#GettingStarted). You only need to interact with `npm` to use for your app development.
 
-For more information about contributing PRs and issues, see our [Contribution Guidelines](https://github.com/ReactWindows/react-native-windows/blob/master/CONTRIBUTING.md) **(Coming Soon)**.
+For more information about contributing PRs and issues, see our [Contribution Guidelines](https://github.com/ReactWindows/react-native-windows/blob/master/CONTRIBUTING.md)
 
 [Good First Task](https://github.com/ReactWindows/react-native-windows/labels/Good%20First%20Task) and [help wanted](https://github.com/ReactWindows/react-native-windows/labels/help%20wanted) are great starting points for PRs.
 
-Each pull request has the unit tests, code analysis, and a [Winium](https://github.com/2gis/Winium) integration test run in the AppVeyor CI service. To shorten the feedback cycle, please be sure to run the unit tests in Visual Studio and verify they are passing before submitting pull requests. For extra credit, verify some of the [Examples](#examples), like UI Explorer, continue to work properly.
+Each pull request has the unit tests, code analysis, and a [Winium](https://github.com/2gis/Winium) integration test run in the AppVeyor CI service. To shorten the feedback cycle, please be sure to [run the unit tests in Visual Studio](https://github.com/ReactWindows/react-native-windows/blob/master/CONTRIBUTING.md#running-unit-tests-in-visual-studio) and verify they are passing before submitting pull requests. For extra credit, [verify the examples in RNTester](https://github.com/ReactWindows/react-native-windows/blob/master/CONTRIBUTING.md#using-rntester) continue to work properly.
 
 ### Examples
 
-- If you're looking for sample code, just browse the Examples folder in the GitHub web UI
-- From your recursive clone of the react-native-windows repo, run ``git pull --recurse-submodules`` to make sure you're up to date with latest code
-- Start the React Native packager by running `react-native start` 
-- Open Examples.sln from the Examples submodule folder in Visual Studio.
-- Set the StartUp project to the example you want to run, press F5.
+- If you're looking for sample code, just browse the RNTester folder in the GitHub web UI
 
 ## License
 

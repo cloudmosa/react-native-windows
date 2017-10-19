@@ -21,12 +21,20 @@ namespace ReactNative
     /// </summary>
     public class ReactRootView : SizeMonitoringCanvas
     {
-        private IReactInstanceManager _reactInstanceManager;
+        private ReactInstanceManager _reactInstanceManager;
         private string _jsModuleName;
         private JObject _initialProps;
 
         private bool _wasMeasured;
         private bool _attachScheduled;
+
+        /// <summary>
+        /// Instantiates the <see cref="ReactRootView"/>.
+        /// </summary>
+        public ReactRootView()
+        {
+            TouchHandler = new TouchHandler(this);
+        }
 
         /// <summary>
         /// Gets the JavaScript module name.
@@ -45,7 +53,6 @@ namespace ReactNative
         internal TouchHandler TouchHandler
         {
             get;
-            set;
         }
 
         /// <summary>
@@ -70,7 +77,7 @@ namespace ReactNative
         /// The React instance manager.
         /// </param>
         /// <param name="moduleName">The module name.</param>
-        public void StartReactApplication(IReactInstanceManager reactInstanceManager, string moduleName)
+        public void StartReactApplication(ReactInstanceManager reactInstanceManager, string moduleName)
         {
             StartReactApplication(reactInstanceManager, moduleName, default(JObject));
         }
@@ -88,7 +95,7 @@ namespace ReactNative
         /// </param>
         /// <param name="moduleName">The module name.</param>
         /// <param name="initialProps">The initialProps</param>
-        public void StartReactApplication(IReactInstanceManager reactInstanceManager, string moduleName, JObject initialProps)
+        public void StartReactApplication(ReactInstanceManager reactInstanceManager, string moduleName, JObject initialProps)
         {
             DispatcherHelpers.AssertOnDispatcher();
 

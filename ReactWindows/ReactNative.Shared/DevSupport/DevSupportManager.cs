@@ -33,7 +33,7 @@ namespace ReactNative.DevSupport
         private readonly SerialDisposable _pollingDisposable = new SerialDisposable();
 
         private readonly IReactInstanceDevCommandsHandler _reactInstanceCommandsHandler;
-        private readonly string _jsBundleFile;
+        private readonly bool _shouldLoadFromPackagerServer;
         private readonly string _jsAppBundleName;
         private readonly DevInternalSettings _devSettings;
         private readonly DevServerHelper _devServerHelper;
@@ -50,11 +50,11 @@ namespace ReactNative.DevSupport
 
         public DevSupportManager(
             IReactInstanceDevCommandsHandler reactInstanceCommandsHandler,
-            string jsBundleFile,
+            bool shouldLoadFromPackagerServer,
             string jsAppBundleName)
         {
             _reactInstanceCommandsHandler = reactInstanceCommandsHandler;
-            _jsBundleFile = jsBundleFile;
+            _shouldLoadFromPackagerServer = shouldLoadFromPackagerServer;
             _jsAppBundleName = jsAppBundleName;
             _devSettings = new DevInternalSettings(this);
             _devServerHelper = new DevServerHelper(_devSettings);
@@ -98,6 +98,12 @@ namespace ReactNative.DevSupport
             get;
             set;
         }
+
+        public bool IsProgressDialogEnabled
+        {
+            get;
+            set;
+        } = true;
 
         public string SourceMapUrl
         {
@@ -353,39 +359,54 @@ namespace ReactNative.DevSupport
             HideRedboxDialog();
             HideDevOptionsDialog();
 
-            var message = !IsRemoteDebuggingEnabled
+            Action cancel;
+            CancellationToken token;
+
+            if (IsProgressDialogEnabled)
+            {
+                var message = !IsRemoteDebuggingEnabled
                 ? "Fetching JavaScript bundle."
                 : "Connecting to remote debugger.";
 
-            var progressDialog = new ProgressDialog("Please wait...", message);
+                ProgressDialog progressDialog = new ProgressDialog("Please wait...", message);
+
 #if WINDOWS_UWP
-            var dialogOperation = progressDialog.ShowAsync();
-            Action cancel = dialogOperation.Cancel;
+                var dialogOperation = progressDialog.ShowAsync();
+                cancel = dialogOperation.Cancel;
 #else
-            if (Application.Current != null && Application.Current.MainWindow != null && Application.Current.MainWindow.IsLoaded)
-            {
-                progressDialog.Owner = Application.Current.MainWindow;
+                if (Application.Current != null && Application.Current.MainWindow != null && Application.Current.MainWindow.IsLoaded)
+                {
+                    progressDialog.Owner = Application.Current.MainWindow;
+                }
+                else
+                {
+                    progressDialog.Topmost = true;
+                    progressDialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                }
+
+                cancel = progressDialog.Close;
+                progressDialog.Show();
+#endif
+                token = progressDialog.Token;
             }
             else
             {
-                progressDialog.Topmost = true;
-                progressDialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                // Progress not enabled - provide empty implementations
+                cancel = () => { };
+                token = default(CancellationToken);
             }
-            
-            Action cancel = progressDialog.Close;
-            progressDialog.Show();
-#endif
+
             if (IsRemoteDebuggingEnabled)
             {
-                await ReloadJavaScriptInProxyMode(cancel, progressDialog.Token).ConfigureAwait(false);
+                await ReloadJavaScriptInProxyMode(cancel, token).ConfigureAwait(false);
             }
-            else if (_jsBundleFile == null)
+            else if (_shouldLoadFromPackagerServer)
             {
-                await ReloadJavaScriptFromServerAsync(cancel, progressDialog.Token).ConfigureAwait(false);
+                await ReloadJavaScriptFromServerAsync(cancel, token).ConfigureAwait(false);
             }
             else
             {
-                await ReloadJavaScriptFromFileAsync(progressDialog.Token);
+                await ReloadJavaScriptFromFileAsync(token);
                 cancel();
             }
         }
