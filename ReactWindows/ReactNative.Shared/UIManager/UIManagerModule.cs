@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using ReactNative.Bridge;
-using ReactNative.Tracing;
+using ReactNative.Bridge.Queue;
 using ReactNative.UIManager.Events;
 using System;
 using System.Collections.Generic;
@@ -17,6 +17,7 @@ namespace ReactNative.UIManager
         private readonly UIImplementation _uiImplementation;
         private readonly IReadOnlyDictionary<string, object> _moduleConstants;
         private readonly EventDispatcher _eventDispatcher;
+        private readonly IActionQueue _layoutActionQueue;
 
         private int _batchId;
         private int _nextRootTag = 1;
@@ -27,20 +28,25 @@ namespace ReactNative.UIManager
         /// <param name="reactContext">The React context.</param>
         /// <param name="viewManagers">The view managers.</param>
         /// <param name="uiImplementationProvider">The UI implementation provider.</param>
+        /// <param name="layoutActionQueue">The layout action queue.</param>
         public UIManagerModule(
             ReactContext reactContext,
             IReadOnlyList<IViewManager> viewManagers,
-            UIImplementationProvider uiImplementationProvider)
-            : base(reactContext)
+            UIImplementationProvider uiImplementationProvider,
+            IActionQueue layoutActionQueue)
+            : base(reactContext, layoutActionQueue)
         {
             if (viewManagers == null)
                 throw new ArgumentNullException(nameof(viewManagers));
             if (uiImplementationProvider == null)
                 throw new ArgumentNullException(nameof(uiImplementationProvider));
-            
+            if (layoutActionQueue == null)
+                throw new ArgumentNullException(nameof(layoutActionQueue));
+
             _eventDispatcher = new EventDispatcher(reactContext);
             _uiImplementation = uiImplementationProvider.Create(reactContext, viewManagers, _eventDispatcher);
             _moduleConstants = CreateConstants(viewManagers);
+            _layoutActionQueue = layoutActionQueue;
             reactContext.AddLifecycleEventListener(this);
         }
 
@@ -115,11 +121,11 @@ namespace ReactNative.UIManager
                 var newWidth = args.NewSize.Width;
                 var newHeight = args.NewSize.Height;
 
-                Context.RunOnNativeModulesQueueThread(() =>
+                _layoutActionQueue.Dispatch(() =>
                 {
                     if (currentCount == resizeCount)
                     {
-                        Context.AssertOnNativeModulesQueueThread();
+                        _layoutActionQueue.AssertOnThread();
                         _uiImplementation.UpdateRootNodeSize(tag, newWidth, newHeight);
                     }
                 });
@@ -135,7 +141,8 @@ namespace ReactNative.UIManager
         /// <param name="block">The UI block.</param>
         public void AddUIBlock(IUIBlock block)
         {
-            _uiImplementation.AddUIBlock(block);
+            _layoutActionQueue.Dispatch(() =>
+                _uiImplementation.AddUIBlock(block));
         }
 
         #region React Methods
@@ -205,12 +212,12 @@ namespace ReactNative.UIManager
             int[] removeFrom)
         {
             _uiImplementation.ManageChildren(
-                viewTag,
-                moveFrom,
-                moveTo,
-                addChildTags,
-                addAtIndexes,
-                removeFrom);
+                    viewTag,
+                    moveFrom,
+                    moveTo,
+                    addChildTags,
+                    addAtIndexes,
+                    removeFrom);
         }
 
         /// <summary>
@@ -349,10 +356,10 @@ namespace ReactNative.UIManager
             ICallback callback)
         {
             _uiImplementation.FindSubViewIn(
-                reactTag,
-                point[0].Value<double>(),
-                point[1].Value<double>(),
-                callback);
+                    reactTag,
+                    point[0].Value<double>(),
+                    point[1].Value<double>(),
+                    callback);
         }
 
         /// <summary>
@@ -365,7 +372,7 @@ namespace ReactNative.UIManager
         [ReactMethod]
         public void setJSResponder(int reactTag, bool blockNativeResponder)
         {
-            _uiImplementation.SetJavaScriptResponder(reactTag, blockNativeResponder);
+           _uiImplementation.SetJavaScriptResponder(reactTag, blockNativeResponder);
         }
 
         /// <summary>
@@ -432,9 +439,9 @@ namespace ReactNative.UIManager
             _uiImplementation.ConfigureNextLayoutAnimation(config, success, error);
         }
 
-#endregion
+        #endregion
 
-        #region ILifecycleEventListenere
+        #region ILifecycleEventListener
 
         /// <summary>
         /// Called when the host receives the suspend event.
@@ -458,8 +465,7 @@ namespace ReactNative.UIManager
         /// </summary>
         public void OnDestroy()
         {
-            _uiImplementation.OnShutdown();
-            _eventDispatcher.OnDestroy();
+            _uiImplementation.OnDestroy();
         }
 
         #endregion
@@ -475,12 +481,10 @@ namespace ReactNative.UIManager
         {
             var batchId = _batchId++;
 
-            using (Tracer.Trace(Tracer.TRACE_TAG_REACT_BRIDGE, "onBatchCompleteUI")
-                .With("BatchId", batchId)
-                .Start())
+            _layoutActionQueue.Dispatch(() =>
             {
                 _uiImplementation.DispatchViewUpdates(batchId);
-            }
+            });
         }
 
         #endregion
@@ -493,6 +497,7 @@ namespace ReactNative.UIManager
         public override void OnReactInstanceDispose()
         {
             _eventDispatcher.OnReactInstanceDispose();
+            _layoutActionQueue.Dispose();
         }
 
         #endregion

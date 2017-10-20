@@ -59,7 +59,7 @@ namespace ReactNative.Bridge
         /// <typeparam name="T">Type of JavaScript module.</typeparam>
         /// <returns>The JavaScript module instance.</returns>
         public T GetJavaScriptModule<T>() 
-            where T : IJavaScriptModule
+            where T : IJavaScriptModule, new()
         {
             AssertReactInstance();
             return _reactInstance.GetJavaScriptModule<T>();
@@ -133,7 +133,14 @@ namespace ReactNative.Bridge
 
             foreach (var listener in clone)
             {
-                listener.OnSuspend();
+                try
+                {
+                    listener.OnSuspend();
+                }
+                catch (Exception e)
+                {
+                    HandleException(e);
+                }
             }
         }
 
@@ -158,14 +165,21 @@ namespace ReactNative.Bridge
 
             foreach (var listener in clone)
             {
-                listener.OnResume();
+                try
+                {
+                    listener.OnResume();
+                }
+                catch (Exception e)
+                {
+                    HandleException(e);
+                }
             }
         }
 
         /// <summary>
-        /// Called by the host when the application shuts down.
+        /// Called by the host when the application is destroyed.
         /// </summary>
-        public async Task DisposeAsync()
+        public void OnDestroy()
         {
             DispatcherHelpers.AssertOnDispatcher();
 
@@ -183,8 +197,23 @@ namespace ReactNative.Bridge
 
             foreach (var listener in clone)
             {
-                listener.OnDestroy();
+                try
+                {
+                    listener.OnDestroy();
+                }
+                catch (Exception e)
+                {
+                    HandleException(e);
+                }
             }
+        }
+
+        /// <summary>
+        /// Called by the host when the application shuts down.
+        /// </summary>
+        public async Task DisposeAsync()
+        {
+            DispatcherHelpers.AssertOnDispatcher();
 
             var reactInstance = _reactInstance;
             if (reactInstance != null)
@@ -206,7 +235,7 @@ namespace ReactNative.Bridge
         public bool IsOnDispatcherQueueThread()
         {
             AssertReactInstance();
-            return _reactInstance.QueueConfiguration.DispatcherQueueThread.IsOnThread();
+            return _reactInstance.QueueConfiguration.DispatcherQueue.IsOnThread();
         }
 
         /// <summary>
@@ -216,7 +245,7 @@ namespace ReactNative.Bridge
         public void AssertOnDispatcherQueueThread()
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.DispatcherQueueThread.AssertOnThread();
+            _reactInstance.QueueConfiguration.DispatcherQueue.AssertOnThread();
         }
 
         /// <summary>
@@ -226,7 +255,7 @@ namespace ReactNative.Bridge
         public void RunOnDispatcherQueueThread(Action action)
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.DispatcherQueueThread.RunOnQueue(action);
+            _reactInstance.QueueConfiguration.DispatcherQueue.Dispatch(action);
         }
 
         /// <summary>
@@ -240,7 +269,7 @@ namespace ReactNative.Bridge
         public bool IsOnJavaScriptQueueThread()
         {
             AssertReactInstance();
-            return _reactInstance.QueueConfiguration.JavaScriptQueueThread.IsOnThread();
+            return _reactInstance.QueueConfiguration.JavaScriptQueue.IsOnThread();
         }
 
         /// <summary>
@@ -250,7 +279,7 @@ namespace ReactNative.Bridge
         public void AssertOnJavaScriptQueueThread()
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.JavaScriptQueueThread.AssertOnThread();
+            _reactInstance.QueueConfiguration.JavaScriptQueue.AssertOnThread();
         }
 
         /// <summary>
@@ -260,7 +289,7 @@ namespace ReactNative.Bridge
         public void RunOnJavaScriptQueueThread(Action action)
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.JavaScriptQueueThread.RunOnQueue(action);
+            _reactInstance.QueueConfiguration.JavaScriptQueue.Dispatch(action);
         }
 
         /// <summary>
@@ -274,7 +303,7 @@ namespace ReactNative.Bridge
         public bool IsOnNativeModulesQueueThread()
         {
             AssertReactInstance();
-            return _reactInstance.QueueConfiguration.NativeModulesQueueThread.IsOnThread();
+            return _reactInstance.QueueConfiguration.NativeModulesQueue.IsOnThread();
         }
 
         /// <summary>
@@ -284,7 +313,7 @@ namespace ReactNative.Bridge
         public void AssertOnNativeModulesQueueThread()
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.NativeModulesQueueThread.AssertOnThread();
+            _reactInstance.QueueConfiguration.NativeModulesQueue.AssertOnThread();
         }
 
         /// <summary>
@@ -294,7 +323,7 @@ namespace ReactNative.Bridge
         public void RunOnNativeModulesQueueThread(Action action)
         {
             AssertReactInstance();
-            _reactInstance.QueueConfiguration.NativeModulesQueueThread.RunOnQueue(action);
+            _reactInstance.QueueConfiguration.NativeModulesQueue.Dispatch(action);
         }
 
         /// <summary>

@@ -1,11 +1,10 @@
 ﻿using ReactNative.Bridge;
-using ReactNative.DevSupport;
+using ReactNative.Bridge.Queue;
 using ReactNative.Modules.Core;
 using ReactNative.Modules.DeviceInfo;
 using ReactNative.Modules.DevSupport;
 using ReactNative.Tracing;
 using ReactNative.UIManager;
-using ReactNative.UIManager.Events;
 using System;
 using System.Collections.Generic;
 #if !WINDOWS_UWP
@@ -22,12 +21,12 @@ namespace ReactNative
     /// </summary>
     class CoreModulesPackage : IReactPackage
     {
-        private readonly IReactInstanceManager _reactInstanceManager;
+        private readonly ReactInstanceManager _reactInstanceManager;
         private readonly Action _hardwareBackButtonHandler;
         private readonly UIImplementationProvider _uiImplementationProvider;
 
         public CoreModulesPackage(
-            IReactInstanceManager reactInstanceManager,
+            ReactInstanceManager reactInstanceManager,
             Action hardwareBackButtonHandler,
             UIImplementationProvider uiImplementationProvider)
         {
@@ -43,10 +42,12 @@ namespace ReactNative
             using (Tracer.Trace(Tracer.TRACE_TAG_REACT_BRIDGE, "createUIManagerModule").Start())
             {
                 var viewManagerList = _reactInstanceManager.CreateAllViewManagers(reactContext);
+                var layoutActionQueue = new LayoutActionQueue(reactContext.HandleException);
                 uiManagerModule = new UIManagerModule(
                     reactContext, 
                     viewManagerList,
-                    _uiImplementationProvider);
+                    _uiImplementationProvider,
+                    layoutActionQueue);
             }
 
             return new List<INativeModule>
@@ -64,21 +65,6 @@ namespace ReactNative
                     _reactInstanceManager.DevSupportManager.SourceMapUrl),
                 uiManagerModule,
                 //new DebugComponentOwnershipModule(reactContext),
-            };
-        }
-
-        public IReadOnlyList<Type> CreateJavaScriptModulesConfig()
-        {
-            return new List<Type>
-            {
-                typeof(RCTDeviceEventEmitter),
-                typeof(JSTimersExecution),
-                typeof(RCTEventEmitter),
-                typeof(RCTNativeAppEventEmitter),
-                typeof(AppRegistry),
-                // TODO: some tracing module
-                typeof(HMRClient),
-                //typeof(RCTDebugComponentOwnership),
             };
         }
 

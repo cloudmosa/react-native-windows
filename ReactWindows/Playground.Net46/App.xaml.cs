@@ -37,6 +37,8 @@ namespace Playground.Net46
         /// <param name="arguments"></param>
         private void OnCreate(string[] arguments)
         {
+            _reactPage.OnResume(Shutdown);
+
             LauncherModule.SetActivatedUrl(String.Join(" ", arguments));
 
             var shellWindow = Application.Current.MainWindow;
