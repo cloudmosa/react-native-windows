@@ -13,7 +13,10 @@ namespace ReactNative.Views.Picker
     /// A view manager responsible for rendering picker.
     /// </summary>
     public class ReactPickerManager : BaseViewManager<ComboBox, ReactPickerShadowNode>
-    { 
+    {
+        // staged selected index, will update after OnAfterUpdateTransaction
+        private int _stagedSelection = -1;
+
         /// <summary>
         /// The name of the view manager.
         /// </summary>
@@ -47,17 +50,7 @@ namespace ReactNative.Views.Picker
         [ReactProp("selected")]
         public void SetSelected(ComboBox view, int selected)
         {
-            // Temporarily disable selection changed event handler.
-            view.SelectionChanged -= OnSelectionChanged;
-
-            view.SelectedIndex = view.Items.Count > selected ? selected : -1;
-
-            if (view.SelectedIndex != -1)
-            {
-                view.Foreground = ((ComboBoxItem)(view.Items[view.SelectedIndex])).Foreground;
-            }
-
-            view.SelectionChanged += OnSelectionChanged;
+            _stagedSelection = selected;
         }
 
         /// <summary>
@@ -96,11 +89,6 @@ namespace ReactNative.Views.Picker
                     view.Items.Add(item);
                 }            
             }
-
-            if (selectedIndex < items.Count)
-            {
-                view.SelectedIndex = selectedIndex;
-            }
              
             view.SelectionChanged += OnSelectionChanged;
         }
@@ -125,6 +113,16 @@ namespace ReactNative.Views.Picker
         /// <param name="extraData">The extra data.</param>
         public override void UpdateExtraData(ComboBox root, object extraData)
         {
+        }
+
+        /// <summary>
+        /// Callback that will be triggered after all properties are updated
+        /// </summary>
+        /// <param name="view">a combobox instance.</param>
+        protected override void OnAfterUpdateTransaction(ComboBox view)
+        {
+            base.OnAfterUpdateTransaction(view);
+            SetSelectionWithSuppressEvent(view, _stagedSelection);
         }
 
         /// <summary>
@@ -176,6 +174,26 @@ namespace ReactNative.Views.Picker
                     new ReactPickerEvent(
                         comboBox.GetTag(),
                         comboBox.SelectedIndex));
+        }
+
+        /// <summary>
+        /// Set |view|'s SelectedIndex without trigger SelectionChanged event
+        /// </summary>
+        /// <param name="view">a combobox instance.</param>
+        /// <param name="selected">The selected item.</param>
+        private void SetSelectionWithSuppressEvent(ComboBox view, int selected)
+        {
+            // Temporarily disable selection changed event handler.
+            view.SelectionChanged -= OnSelectionChanged;
+
+            view.SelectedIndex = view.Items.Count > selected ? selected : -1;
+
+            if (view.SelectedIndex != -1)
+            {
+                view.Foreground = ((ComboBoxItem)(view.Items[view.SelectedIndex])).Foreground;
+            }
+
+            view.SelectionChanged += OnSelectionChanged;
         }
 
         /// <summary>
