@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PCLStorage;
 using ReactNative.Bridge;
+using ReactNative.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -340,7 +341,8 @@ namespace ReactNative.Modules.Storage
 
         private async Task<IFolder> GetAsyncStorageFolder(bool createIfNotExists)
         {
-            var localFolder = FileSystem.Current.LocalStorage;
+            var localFolder = WindowsStorage.LocalStorage;
+
             var existsCheck = await localFolder.CheckExistsAsync(AsyncStorageHelpers.DirectoryName).ConfigureAwait(false);
             if (existsCheck == ExistenceCheckResult.FolderExists)
             {

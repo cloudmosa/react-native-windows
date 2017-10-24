@@ -170,7 +170,7 @@ namespace ReactNative.DevSupport
                 }
 #else
                 var lastUpdateTime = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
-                var localFolder = FileSystem.Current.LocalStorage;
+                var localFolder = WindowsStorage.LocalStorage;
                 if (await localFolder.CheckExistsAsync(JSBundleFileName) == ExistenceCheckResult.FileExists)
                 {
                     return File.GetLastWriteTime(JSBundleFileName) > lastUpdateTime;
@@ -592,7 +592,7 @@ namespace ReactNative.DevSupport
                 }
 
                 var temporaryFile = await FileSystem.Current.GetFileFromPathAsync(temporaryFilePath, token);
-                var localStorage = FileSystem.Current.LocalStorage;
+                var localStorage = WindowsStorage.LocalStorage;
                 string newPath = PortablePath.Combine(localStorage.Path, JSBundleFileName);
 
                 await temporaryFile.MoveAsync(newPath, NameCollisionOption.ReplaceExisting, token);
@@ -623,7 +623,7 @@ namespace ReactNative.DevSupport
                     if (temporaryFile != null)
                     {
                         await temporaryFile.DeleteAsync(token).ConfigureAwait(false);
-                    }   
+                    }
                 }
             }
 #endif
