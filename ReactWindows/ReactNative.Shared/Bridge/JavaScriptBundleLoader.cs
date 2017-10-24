@@ -1,6 +1,7 @@
 ﻿using PCLStorage;
 using System;
 using System.Threading.Tasks;
+using ReactNative.Common;
 #if WINDOWS_UWP
 using Windows.Storage;
 #else
@@ -136,7 +137,7 @@ namespace ReactNative.Bridge
 
             public override async Task InitializeAsync()
             {
-                var localFolder = FileSystem.Current.LocalStorage;
+                var localFolder = WindowsStorage.LocalStorage;
                 var storageFile = await localFolder.GetFileAsync(_cachedFileLocation).ConfigureAwait(false);
                 _script = storageFile.Path;
             }
