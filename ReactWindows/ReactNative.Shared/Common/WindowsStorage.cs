@@ -1,9 +1,5 @@
 ﻿using PCLStorage;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Windows;
 
 namespace ReactNative.Common
 {
@@ -12,6 +8,19 @@ namespace ReactNative.Common
     /// </summary>
     public static class WindowsStorage
     {
+        private static string _localStoragePath = null;
+
+        /// <summary>
+        /// Setup WindowsStorage settings
+        /// </summary>
+        /// <param name="localStoragePath">Setup LocalStorage path</param>
+        public static void Initialize(string localStoragePath)
+        {
+#if !WINDOWS_UWP
+            _localStoragePath = EnsureFolder(localStoragePath);
+#endif
+        }
+
         /// <summary>
         /// Get the LocalStorage path
         /// </summary>
@@ -22,9 +31,8 @@ namespace ReactNative.Common
 #if WINDOWS_UWP
                 return FileSystem.Current.LocalStorage.Path;
 #else
-                var appDataFolderPath = Application.Current.Properties["AppDataFolder"] as string;
-                if (appDataFolderPath != null && Directory.Exists(appDataFolderPath))
-                    return appDataFolderPath;
+                if (_localStoragePath != null)
+                    return _localStoragePath;
                 return FileSystem.Current.LocalStorage.Path;
 #endif
             }
@@ -43,6 +51,18 @@ namespace ReactNative.Common
                 return new FileSystemFolder(LocalStoragePath);
 #endif
             }
+        }
+
+        /// <summary>
+        /// Ensure folder is existed, otherwise will create the folder.
+        /// </summary>
+        /// <param name="folderPath">Target folder path</param>
+        /// <returns>Existed folder path</returns>
+        private static string EnsureFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+            return folderPath;
         }
     }
 }
