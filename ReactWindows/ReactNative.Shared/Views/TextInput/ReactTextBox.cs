@@ -1,5 +1,6 @@
 ﻿using ReactNative.UIManager;
 using System.Threading;
+using System.Windows.Input;
 #if WINDOWS_UWP
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -56,6 +57,15 @@ namespace ReactNative.Views.TextInput
             {
                 SelectionStart = 0;
                 SelectionLength = Text.Length;
+            }
+        }
+
+        protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseLeftButtonDown(e);
+            if (!this.IsKeyboardFocusWithin) {
+                e.Handled = true;
+                this.Focus();
             }
         }
 
