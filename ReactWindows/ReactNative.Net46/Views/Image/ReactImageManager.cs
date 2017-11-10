@@ -223,13 +223,20 @@ namespace ReactNative.Views.Image
         /// <returns>The image view instance.</returns>
         protected override Border CreateViewInstance(ThemedReactContext reactContext)
         {
-            return new Border
+            var view = new Border
             {
                 Background = new ImageBrush
                 {
                     Stretch = Stretch.UniformToFill,
                 },
             };
+
+            // NOTE(kudo): Workaround to fix image quality issue
+            // should find some clever ways to balance between quality and efficiency.
+            RenderOptions.SetBitmapScalingMode(view, BitmapScalingMode.HighQuality);
+            RenderOptions.SetEdgeMode(view, EdgeMode.Aliased);
+
+            return view;
         }
 
         /// <summary>
