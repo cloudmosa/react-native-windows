@@ -439,6 +439,7 @@ namespace ReactNative.Views.TextInput
         {
             var paddings = extraData as float[];
             var textUpdate = default(Tuple<int, string>);
+            var textAndSelectionUpdate = default(Tuple<int, string, int, int>);
             if (paddings != null)
             {
                 view.Padding = new Thickness(
@@ -471,6 +472,40 @@ namespace ReactNative.Views.TextInput
                 view.Text = text ?? "";
                 view.SelectionStart = Math.Min(selectionStart, textLength);
                 view.SelectionLength = Math.Min(selectionLength, maxLength < 0 ? 0 : maxLength);
+
+                if (_onSelectionChange)
+                {
+                    view.SelectionChanged += OnSelectionChanged;
+                }
+
+                view.TextChanged += OnTextChanged;
+            }
+            else if ((textAndSelectionUpdate = extraData as Tuple<int, string, int, int>) != null)
+            {
+                var javaScriptCount = textAndSelectionUpdate.Item1;
+                if (javaScriptCount < view.CurrentEventCount)
+                {
+                    return;
+                }
+
+                view.TextChanged -= OnTextChanged;
+
+                if (_onSelectionChange)
+                {
+                    view.SelectionChanged -= OnSelectionChanged;
+                }
+
+                var text = textAndSelectionUpdate.Item2;
+                var selectionStart = textAndSelectionUpdate.Item3;
+                var selectionEnd = textAndSelectionUpdate.Item4;
+
+                selectionStart = Math.Max(selectionStart, 0);
+                selectionEnd = Math.Min(selectionEnd, text.Length);
+                selectionStart = Math.Min(selectionStart, selectionEnd);
+
+                view.Text = text;
+                view.SelectionStart = selectionStart;
+                view.SelectionLength = selectionEnd - selectionStart;
 
                 if (_onSelectionChange)
                 {
