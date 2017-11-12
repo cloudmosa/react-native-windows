@@ -80,7 +80,8 @@ namespace ReactNative.Views.TextInput
                         Text,
                         e.NewSize.Width,
                         e.NewSize.Height,
-                        IncrementEventCount()));
+                        IncrementEventCount(),
+                        ReactTextChangedEvent.Reason.SizeChanged));
         }
     }
 }
