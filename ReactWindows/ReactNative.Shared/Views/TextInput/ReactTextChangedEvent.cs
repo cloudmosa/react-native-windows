@@ -15,6 +15,13 @@ namespace ReactNative.Views.TextInput
         private readonly double _contentHeight;
         private readonly int _eventCount;
 
+        public enum Reason
+        {
+            TextChanged,
+            SizeChanged,
+        }
+        private readonly Reason _reason;
+
         /// <summary>
         /// Instantiates a <see cref="ReactTextChangedEvent"/>.
         /// </summary>
@@ -23,13 +30,14 @@ namespace ReactNative.Views.TextInput
         /// <param name="contentWidth">The content width.</param>
         /// <param name="contentHeight">The content height.</param>
         /// <param name="eventCount">The event count.</param>
-        public ReactTextChangedEvent(int viewTag, string text, double contentWidth, double contentHeight, int eventCount) 
+        public ReactTextChangedEvent(int viewTag, string text, double contentWidth, double contentHeight, int eventCount, Reason reason)
             : base(viewTag)
         {
             _text = text;
             _contextWidth = contentWidth;
             _contentHeight = contentHeight;
             _eventCount = eventCount;
+            _reason = reason;
         }
 
         /// <summary>
@@ -76,6 +84,15 @@ namespace ReactNative.Views.TextInput
                 { "eventCount", _eventCount },
                 { "target", ViewTag },
             };
+            switch (_reason)
+            {
+                case Reason.SizeChanged:
+                    eventData["_reason"] = "sizeChanged";
+                    break;
+                case Reason.TextChanged:
+                    eventData["_reason"] = "textChanged";
+                    break;
+            }
 
             rctEventEmitter.receiveEvent(ViewTag, EventName, eventData);
         }

@@ -433,7 +433,8 @@ namespace ReactNative.Views.TextInput
                         textBox.Password,
                         textBox.ActualWidth,
                         textBox.ActualHeight,
-                        0));
+                        0,
+                        ReactTextChangedEvent.Reason.TextChanged));
         }
 
         private void OnGotFocus(object sender, RoutedEventArgs e)

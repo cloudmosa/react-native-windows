@@ -546,7 +546,8 @@ namespace ReactNative.Views.TextInput
                         textBox.Text,
                         textBox.ActualWidth,
                         textBox.ActualHeight,
-                        textBox.CurrentEventCount));
+                        textBox.CurrentEventCount,
+                        ReactTextChangedEvent.Reason.TextChanged));
         }
 
         private void OnGotFocus(object sender, RoutedEventArgs e)
