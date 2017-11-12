@@ -101,6 +101,20 @@ namespace ReactNative.Views.TextInput
                             }
                         }
                     },
+                    {
+                        "topKeyPress",
+                        new Dictionary<string, object>()
+                        {
+                            {
+                                "phasedRegistrationNames",
+                                new Dictionary<string, string>()
+                                {
+                                    { "bubbled" , "onKeyPress" },
+                                    { "captured" , "onKeyPressCapture" }
+                                }
+                            }
+                        }
+                    },
                 };
             }
         }
@@ -477,6 +491,7 @@ namespace ReactNative.Views.TextInput
         public override void OnDropViewInstance(ThemedReactContext reactContext, ReactTextBox view)
         {
             base.OnDropViewInstance(reactContext, view);
+            view.PreviewKeyDown -= OnPreviewKeyDown;
             view.KeyDown -= OnKeyDown;
             view.LostFocus -= OnLostFocus;
             view.GotFocus -= OnGotFocus;
@@ -516,6 +531,7 @@ namespace ReactNative.Views.TextInput
             view.GotFocus += OnGotFocus;
             view.LostFocus += OnLostFocus;
             view.KeyDown += OnKeyDown;
+            view.PreviewKeyDown += OnPreviewKeyDown;
         }
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
@@ -558,7 +574,44 @@ namespace ReactNative.Views.TextInput
                       textBox.GetTag(),
                       textBox.Text));
         }
-        
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var keyValue = "";
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    keyValue = "Enter";
+                    break;
+                case Key.Back:
+                    keyValue = "Backspace";
+                    break;
+                case Key.Space:
+                    keyValue = " ";
+                    break;
+                case Key.Escape:
+                    keyValue = "Escape";
+                    break;
+                default:
+                    {
+                        KeyConverter k = new KeyConverter();
+                        keyValue = k.ConvertToString(e.Key);
+                    }
+                    break;
+            }
+            if (keyValue != "")
+            {
+                var textBox = (ReactTextBox)sender;
+                textBox.GetReactContext()
+                    .GetNativeModule<UIManagerModule>()
+                    .EventDispatcher
+                    .DispatchEvent(
+                        new ReactTextInputKeyPressEvent(
+                            textBox.GetTag(),
+                            keyValue));
+            }
+        }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
