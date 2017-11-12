@@ -56,6 +56,9 @@ namespace ReactNative.Views.TextInput
         private string _fontFamily;
         private string _text;
 
+        private int _textSelectionStart = Unset;
+        private int _textSelectionEnd = Unset;
+
         private int _jsEventCount = Unset;
 
         /// <summary>
@@ -79,6 +82,30 @@ namespace ReactNative.Views.TextInput
         public void SetText(string text)
         {
             _text = text ?? "";
+            MarkUpdated();
+        }
+
+        /// <summary>
+        /// Sets the selection for the node.
+        /// </summary>
+        /// <param name="selection">The selection {start:number, end:number}.</param>
+        [ReactProp("selection")]
+        public void SetSelection(JObject selection)
+        {
+            _textSelectionStart = Unset;
+            _textSelectionEnd = Unset;
+
+            if (selection != null)
+            {
+                JToken start = selection["start"];
+                JToken end = selection["end"];
+                if (start.Type == JTokenType.Integer && end.Type == JTokenType.Integer)
+                {
+                    _textSelectionStart = (int)start;
+                    _textSelectionEnd = (int)end;
+                }
+            }
+
             MarkUpdated();
         }
 
@@ -238,7 +265,11 @@ namespace ReactNative.Views.TextInput
 
             if (_jsEventCount != Unset)
             {
-                uiViewOperationQueue.EnqueueUpdateExtraData(ReactTag, Tuple.Create(_jsEventCount, _text));
+                if (_textSelectionStart != Unset && _textSelectionEnd != Unset)
+                    uiViewOperationQueue.EnqueueUpdateExtraData(ReactTag, Tuple.Create(_jsEventCount, _text,
+                        _textSelectionStart, _textSelectionEnd));
+                else
+                    uiViewOperationQueue.EnqueueUpdateExtraData(ReactTag, Tuple.Create(_jsEventCount, _text));
             }
         }
 
