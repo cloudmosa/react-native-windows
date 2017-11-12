@@ -264,7 +264,7 @@ var TextInput = createReactClass({
      * Callback that is called when a key is pressed.
      * Pressed key value is passed as an argument to the callback handler.
      * Fires before onChange callbacks.
-     * @platform ios
+     * @platform ios, windows
      */
     onKeyPress: PropTypes.func,
     /**
@@ -648,6 +648,7 @@ var TextInput = createReactClass({
           onChange={this._onChange}
           onEndEditing={this.props.onEndEditing}
           onSubmitEditing={this.props.onSubmitEditing}
+          onKeyPress={this.props.onKeyPress}
           clearTextOnFocus={this.props.clearTextOnFocus}
           selectTextOnFocus={this.props.selectTextOnFocus}
           onLayout={this.props.onLayout}
@@ -673,6 +674,7 @@ var TextInput = createReactClass({
           onSelectionChange={onSelectionChange}
           onEndEditing={this.props.onEndEditing}
           onSubmitEditing={this.props.onSubmitEditing}
+          onKeyPress={this.props.onKeyPress}
           clearTextOnFocus={this.props.clearTextOnFocus}
           selectTextOnFocus={this.props.selectTextOnFocus}
           onLayout={this.props.onLayout}
