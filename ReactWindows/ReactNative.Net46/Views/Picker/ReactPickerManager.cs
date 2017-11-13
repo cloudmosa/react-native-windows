@@ -29,6 +29,30 @@ namespace ReactNative.Views.Picker
         }
 
         /// <summary>
+        /// Sets the background color
+        /// </summary>
+        /// <param name="view">a combobox view.</param>
+        /// <param name="color">The color value.</param>
+        [ReactProp(ViewProps.BackgroundColor, CustomType = "Color")]
+        public void SetBackgroundColor(ComboBox view, uint? color)
+        {
+            view.Background = color.HasValue
+                ? new SolidColorBrush(ColorHelpers.Parse(color.Value))
+                : null;
+        }
+
+        /// <summary>
+        /// Sets the font size
+        /// </summary>
+        /// <param name="view">a combobox view.</param>
+        /// <param name="fontSize">The font size.</param>
+        [ReactProp(ViewProps.FontSize)]
+        public void SetFontSize(ComboBox view, double fontSize)
+        {
+            view.FontSize = fontSize;
+        }
+
+        /// <summary>
         /// Sets whether a picker is enabled.
         /// </summary>
         /// <param name="view">a combobox view.</param>
@@ -144,7 +168,12 @@ namespace ReactNative.Views.Picker
         /// <returns>The view instance.</returns>
         protected override ComboBox CreateViewInstance(ThemedReactContext reactContext)
         {
-            return new ComboBox();
+            ComboBox comboBox = new ComboBox();
+            comboBox.Style = Application.Current.FindResource(ToolBar.ComboBoxStyleKey) as Style;
+            comboBox.BorderThickness = new Thickness(0, 0, 0, 1);
+            comboBox.BorderBrush = Brushes.LightGray;
+            comboBox.Resources.Add(SystemColors.HighlightBrushKey, Brushes.LightSkyBlue);
+            return comboBox;
         }
 
         /// <summary>
