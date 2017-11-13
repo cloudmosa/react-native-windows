@@ -30,6 +30,7 @@ var itemStylePropType = StyleSheetPropType(TextStylePropTypes);
 var pickerStyleType = StyleSheetPropType({
   ...ViewStylePropTypes,
   color: ColorPropType,
+  fontSize: PropTypes.number,
 });
 
 var MODE_DIALOG = 'dialog';

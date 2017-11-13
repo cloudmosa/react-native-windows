@@ -29,6 +29,7 @@ var REF_PICKER = 'picker';
 var pickerStyleType = StyleSheetPropType({
   ...ViewStylePropTypes,
   color: ColorPropType,
+  fontSize: PropTypes.number,
 });
 
 type Event = Object;
