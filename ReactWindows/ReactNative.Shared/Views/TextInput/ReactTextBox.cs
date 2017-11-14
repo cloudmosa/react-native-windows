@@ -154,7 +154,8 @@ namespace ReactNative.Views.TextInput
             {
                 _avoidTextChanged = true;
                 this.PlaceholderActive = false;
-                this.Text = this.Text.Replace(this.PlaceholderText, string.Empty);
+                if (!string.IsNullOrEmpty(this.PlaceholderText))
+                    this.Text = this.Text.Replace(this.PlaceholderText, string.Empty);
                 this.Select(this.Text.Length, 0);
                 e.Handled = true;
             }
