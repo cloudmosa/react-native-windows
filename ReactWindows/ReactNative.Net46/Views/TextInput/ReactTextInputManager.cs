@@ -153,7 +153,7 @@ namespace ReactNative.Views.TextInput
         [ReactProp(ViewProps.Color, CustomType = "Color")]
         public void SetColor(ReactTextBox view, uint? color)
         {
-            view.Foreground = color.HasValue
+            view.TextColor = color.HasValue
                 ? new SolidColorBrush(ColorHelpers.Parse(color.Value))
                 : null;
         }
@@ -223,7 +223,7 @@ namespace ReactNative.Views.TextInput
         [ReactProp("placeholder")]
         public void SetPlaceholder(ReactTextBox view, string placeholder)
         {
-            PlaceholderAdorner.SetText(view, placeholder);
+            view.PlaceholderText = placeholder;
         }
 
         /// <summary>
@@ -234,11 +234,10 @@ namespace ReactNative.Views.TextInput
         [ReactProp("placeholderTextColor", CustomType = "Color")]
         public void SetPlaceholderTextColor(ReactTextBox view, uint? color)
         {
-            var brush = color.HasValue
+            view.PlaceholderColor = color.HasValue
                 ? new SolidColorBrush(ColorHelpers.Parse(color.Value))
                 : new SolidColorBrush(DefaultPlaceholderTextColor);
 
-            PlaceholderAdorner.SetTextColor(view, brush);
         }
 
         /// <summary>
