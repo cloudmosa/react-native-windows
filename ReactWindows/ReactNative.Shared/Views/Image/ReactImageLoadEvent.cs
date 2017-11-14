@@ -77,6 +77,8 @@ namespace ReactNative.Views.Image
                         return "topLoad";
                     case OnLoadEnd:
                         return "topLoadEnd";
+                    case OnError:
+                        return "topError";
                     default:
                         throw new InvalidOperationException(
                             Invariant($"Invalid image event '{_eventType}'."));
