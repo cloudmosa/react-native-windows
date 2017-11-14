@@ -144,9 +144,13 @@ namespace ReactNative.Views.TextInput
             // If the Text is empty, insert placeholder and set cursor to to first position
             if (string.IsNullOrEmpty(this.Text))
             {
-                _avoidTextChanged = true;
                 this.PlaceholderActive = true;
-                this.Text = this.PlaceholderText;
+                if (this.Text != this.PlaceholderText)
+                {
+                    // Suppress OnTextChanged event only if we're setting place holder text.
+                    _avoidTextChanged = true;
+                    this.Text = this.PlaceholderText;
+                }
                 this.Select(0, 0);
                 e.Handled = true;
             }
