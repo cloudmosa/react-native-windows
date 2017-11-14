@@ -324,7 +324,8 @@ namespace ReactNative.Views.TextInput
                 TextWrapping = TextWrapping.Wrap,
             };
 
-            var normalizedText = string.IsNullOrEmpty(textInputNode._text) ? " " : textInputNode._text;
+            // NOTE: Use letter contains descent part for measuring text block height.
+            var normalizedText = string.IsNullOrEmpty(textInputNode._text) ? "y" : textInputNode._text;
             var inline = new Run { Text = normalizedText };
             FormatInline(textInputNode, inline);
 
