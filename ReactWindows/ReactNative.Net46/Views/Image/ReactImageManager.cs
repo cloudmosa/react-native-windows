@@ -241,8 +241,15 @@ namespace ReactNative.Views.Image
 
             // NOTE(kudo): Workaround to fix image quality issue
             // should find some clever ways to balance between quality and efficiency.
-            RenderOptions.SetBitmapScalingMode(view, BitmapScalingMode.HighQuality);
-            RenderOptions.SetEdgeMode(view, EdgeMode.Aliased);
+            // Exclude Windows 8 for crash
+            // TODO: Add more description
+            var osVersion = Environment.OSVersion.Version;
+            var isWin8 = osVersion.Major == 6 && (osVersion.Minor == 2 || osVersion.Minor == 3);
+            if (!isWin8)
+            {
+                RenderOptions.SetBitmapScalingMode(view, BitmapScalingMode.HighQuality);
+                RenderOptions.SetEdgeMode(view, EdgeMode.Aliased);
+            }
 
             return view;
         }
