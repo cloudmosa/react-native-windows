@@ -65,7 +65,7 @@ namespace ReactNative.Modules.Image
 
         private static IObservable<ImageStatusEventData> GetOpenedObservable(this BitmapImage image)
         {
-            return Observable.FromEventPattern<EventHandler, RoutedEventArgs>(
+            return Observable.FromEventPattern<EventHandler, EventArgs>(
                 h => image.DownloadCompleted += h,
                 h => image.DownloadCompleted -= h)
                 .Select(args =>
@@ -91,10 +91,10 @@ namespace ReactNative.Modules.Image
 
         private static IObservable<ImageStatusEventData> GetFailedObservable(this BitmapImage image)
         {
-            return Observable.FromEventPattern<EventHandler<System.Windows.Media.ExceptionEventArgs>, ExceptionRoutedEventArgs>(
+            return Observable.FromEventPattern<EventHandler<System.Windows.Media.ExceptionEventArgs>, System.Windows.Media.ExceptionEventArgs>(
                 h => image.DownloadFailed += h,
                 h => image.DownloadFailed -= h)
-                .Select<EventPattern<ExceptionRoutedEventArgs>, ImageStatusEventData>(pattern =>
+                .Select<EventPattern<System.Windows.Media.ExceptionEventArgs>, ImageStatusEventData>(pattern =>
                 {
                     throw new InvalidOperationException(pattern.EventArgs.ErrorException.Message);
                 });
@@ -102,7 +102,7 @@ namespace ReactNative.Modules.Image
 
         private static IObservable<ImageStatusEventData> GetDownloadingObservable(this BitmapImage image)
         {
-            return Observable.FromEventPattern<EventHandler<DownloadProgressEventArgs>, DownloadProgressChangedEventArgs>(
+            return Observable.FromEventPattern<EventHandler<DownloadProgressEventArgs>, DownloadProgressEventArgs>(
                 h => image.DownloadProgress += h,
                 h => image.DownloadProgress -= h)
                 .Take(1)
