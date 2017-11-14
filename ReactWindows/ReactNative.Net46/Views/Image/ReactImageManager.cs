@@ -5,6 +5,7 @@ using ReactNative.UIManager;
 using ReactNative.UIManager.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,6 +64,13 @@ namespace ReactNative.Views.Image
                         new Dictionary<string, object>
                         {
                             { "registrationName", "onLoadEnd" }
+                        }
+                    },
+                    {
+                        "topError",
+                        new Dictionary<string, object>
+                        {
+                            { "registrationName", "onError" }
                         }
                     },
                 };
@@ -258,6 +266,14 @@ namespace ReactNative.Views.Image
                 .DispatchEvent(
                     new ReactImageLoadEvent(
                         view.GetTag(),
+                        ReactImageLoadEvent.OnError));
+
+            view.GetReactContext()
+                .GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(
+                    new ReactImageLoadEvent(
+                        view.GetTag(),
                         ReactImageLoadEvent.OnLoadEnd));
         }
 
@@ -313,6 +329,16 @@ namespace ReactNative.Views.Image
                     status => OnImageStatusUpdate(view, status),
                     _ => OnImageFailed(view));
 
+                var uri = new Uri(source);
+                if (uri.IsFile)
+                {
+                    var filePath = uri.LocalPath;
+                    if (!File.Exists(filePath))
+                    {
+                        OnImageFailed(view);
+                        return;
+                    }
+                }
                 image.UriSource = new Uri(source);
             }
 
