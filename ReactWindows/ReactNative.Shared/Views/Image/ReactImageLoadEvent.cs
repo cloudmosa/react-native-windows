@@ -25,6 +25,11 @@ namespace ReactNative.Views.Image
         /// </summary>
         public const int OnLoadEnd = 3;
 
+        /// <summary>
+        /// The event identifier for image load error.
+        /// </summary>
+        public const int OnError = 4;
+
         private readonly int _eventType;
         private readonly string _imageUri;
         private readonly int _width;
@@ -48,7 +53,7 @@ namespace ReactNative.Views.Image
         /// <param name="imageUri">The image URI.</param>
         /// <param name="width">The image width.</param>
         /// <param name="height">The image height.</param>
-        public ReactImageLoadEvent(int viewId, int eventType, string imageUri, int width, int height) 
+        public ReactImageLoadEvent(int viewId, int eventType, string imageUri, int width, int height)
             : base(viewId)
         {
             _eventType = eventType;
