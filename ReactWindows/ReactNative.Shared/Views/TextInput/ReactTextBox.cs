@@ -16,7 +16,6 @@ namespace ReactNative.Views.TextInput
     {
         private int _eventCount;
         private string _placeholderText = string.Empty;
-        private bool _avoidTextChanged = false;
         private Brush _textColor;
         private Brush _placeholderColor;
         private bool _placeholderActive;
@@ -88,8 +87,11 @@ namespace ReactNative.Views.TextInput
             set
             {
                 _placeholderText = value;
-                this.Text = value;
-                this.PlaceholderActive = true;
+                if (!string.IsNullOrEmpty(_placeholderText))
+                {
+                    this.Text = value;
+                    this.PlaceholderActive = true;
+                }
             }
         }
 
@@ -98,9 +100,25 @@ namespace ReactNative.Views.TextInput
             return Interlocked.Increment(ref _eventCount);
         }
 
+        public string Text {
+            get
+            {
+                if (this.PlaceholderActive && base.Text == this.PlaceholderText)
+                    return string.Empty;
+                return base.Text;
+            }
+            set {
+                if (this.PlaceholderActive && !this.IsFocused && string.IsNullOrEmpty(value))
+                    return;
+                else
+                    base.Text = value;
+            }
+        }
+
         protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
+
             if (this.ClearTextOnFocus)
             {
                 this.Text = "";
@@ -108,6 +126,8 @@ namespace ReactNative.Views.TextInput
 
             if (this.PlaceholderActive)
             {
+                this.PlaceholderActive = false;
+                this.Text = string.Empty;
                 this.Select(0, 0);
             }
             else if (SelectTextOnFocus)
@@ -116,55 +136,35 @@ namespace ReactNative.Views.TextInput
             }
         }
 
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            if (string.IsNullOrEmpty(this.Text) && !string.IsNullOrEmpty(this.PlaceholderText))
+            {
+                this.PlaceholderActive = true;
+                this.Text = this.PlaceholderText;
+            }
+        }
+
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (!this.IsKeyboardFocusWithin) {
+            base.OnPreviewMouseLeftButtonDown(e);
+            if (!this.IsKeyboardFocusWithin && SelectTextOnFocus)
+            {
                 e.Handled = true;
                 this.Focus();
             }
-            base.OnPreviewMouseLeftButtonDown(e);
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        protected override void OnPreviewTouchDown(TouchEventArgs e)
         {
-            // Prevents that the user can go through the placeholder with arrow keys
-            if (PlaceholderActive && (e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up || e.Key == Key.Down))
-                e.Handled = true;
-            base.OnPreviewKeyDown(e);
-        }
-
-        protected override void OnTextChanged(TextChangedEventArgs e)
-        {
-            // Check flag
-            if (_avoidTextChanged) {
-                _avoidTextChanged = false;
-                return;
-            }
-
-            // If the Text is empty, insert placeholder and set cursor to to first position
-            if (string.IsNullOrEmpty(this.Text))
+            base.OnPreviewTouchDown(e);
+            if (!this.IsKeyboardFocusWithin && SelectTextOnFocus)
             {
-                this.PlaceholderActive = true;
-                if (this.Text != this.PlaceholderText)
-                {
-                    // Suppress OnTextChanged event only if we're setting place holder text.
-                    _avoidTextChanged = true;
-                    this.Text = this.PlaceholderText;
-                }
-                this.Select(0, 0);
                 e.Handled = true;
+                this.Focus();
             }
-            else if (this.PlaceholderActive && this.Text != this.PlaceholderText)
-            {
-                _avoidTextChanged = true;
-                this.PlaceholderActive = false;
-                if (!string.IsNullOrEmpty(this.PlaceholderText))
-                    this.Text = this.Text.Replace(this.PlaceholderText, string.Empty);
-                this.Select(this.Text.Length, 0);
-                e.Handled = true;
-            }
-
-            base.OnTextChanged(e);
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
