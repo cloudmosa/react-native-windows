@@ -94,9 +94,9 @@ namespace ReactNative.Modules.Image
             return Observable.FromEventPattern<EventHandler<System.Windows.Media.ExceptionEventArgs>, System.Windows.Media.ExceptionEventArgs>(
                 h => image.DownloadFailed += h,
                 h => image.DownloadFailed -= h)
-                .Select<EventPattern<System.Windows.Media.ExceptionEventArgs>, ImageStatusEventData>(pattern =>
+                .SelectMany<EventPattern<System.Windows.Media.ExceptionEventArgs>, ImageStatusEventData>(pattern =>
                 {
-                    throw new InvalidOperationException(pattern.EventArgs.ErrorException.Message);
+                    return Observable.Throw<ImageStatusEventData>(new InvalidOperationException(pattern.EventArgs.ErrorException.Message));
                 });
         }
 
