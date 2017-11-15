@@ -31,6 +31,8 @@ namespace ReactNative.Modules.NetInfo
             : base(reactContext)
         {
             _networkInfo = networkInfo;
+            _networkInfo.Start();
+            _networkInfo.NetworkConnectivityChanged += OnNetworkConnectivityChanged;
         }
 
         /// <summary>
@@ -59,6 +61,8 @@ namespace ReactNative.Modules.NetInfo
         /// </summary>
         public void OnDestroy()
         {
+            _networkInfo.NetworkConnectivityChanged -= OnNetworkConnectivityChanged;
+            _networkInfo.Stop();
         }
 
         /// <summary>
@@ -66,8 +70,6 @@ namespace ReactNative.Modules.NetInfo
         /// </summary>
         public void OnResume()
         {
-            _networkInfo.Start();
-            _networkInfo.NetworkConnectivityChanged += OnNetworkConnectivityChanged;
         }
 
         /// <summary>
@@ -75,8 +77,7 @@ namespace ReactNative.Modules.NetInfo
         /// </summary>
         public void OnSuspend()
         {
-            _networkInfo.NetworkConnectivityChanged -= OnNetworkConnectivityChanged;
-            _networkInfo.Stop();
+
         }
 
         /// <summary>
