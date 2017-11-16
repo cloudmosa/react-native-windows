@@ -432,7 +432,7 @@ namespace ReactNative.UIManager
 
                 if (s.EndsWith("%"))
                 {
-                    return YogaValue.Percent(float.Parse(s.Substring(0, s.Length - 1)));
+                    return YogaValue.Percent(float.Parse(s.Substring(0, s.Length - 1), System.Globalization.CultureInfo.InvariantCulture));
                 }
 
                 throw new InvalidOperationException(
