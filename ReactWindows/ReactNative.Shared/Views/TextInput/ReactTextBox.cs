@@ -89,8 +89,8 @@ namespace ReactNative.Views.TextInput
                 _placeholderText = value;
                 if (!string.IsNullOrEmpty(_placeholderText))
                 {
-                    this.Text = value;
                     this.PlaceholderActive = true;
+                    this.Text = value;
                 }
             }
         }
@@ -108,10 +108,13 @@ namespace ReactNative.Views.TextInput
                 return base.Text;
             }
             set {
-                if (this.PlaceholderActive && !this.IsFocused && string.IsNullOrEmpty(value))
-                    return;
-                else
-                    base.Text = value;
+                if (this.PlaceholderActive && !this.IsFocused) {
+                    if (string.IsNullOrEmpty(value))
+                        return;
+                    else if (value != this.PlaceholderText)
+                        PlaceholderActive = false;
+                }
+                base.Text = value;
             }
         }
 
