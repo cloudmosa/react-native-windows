@@ -31,7 +31,16 @@ namespace ReactNative.Modules.Clipboard
 
         public void SetText(string str)
         {
-            System.Windows.Clipboard.SetText(str);
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    System.Windows.Clipboard.SetText(str);
+                    return;
+                }
+                catch { }
+                System.Threading.Thread.Sleep(10);
+            }
         }
     }
 }
