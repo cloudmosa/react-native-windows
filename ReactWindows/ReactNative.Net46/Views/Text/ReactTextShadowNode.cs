@@ -209,8 +209,8 @@ namespace ReactNative.Views.Text
                 textBlock.Inlines.Add(ReactInlineShadowNodeVisitor.Apply(child));
             }
 
-            var normalizedWidth = YogaConstants.IsUndefined(width) ? double.PositiveInfinity : width;
-            var normalizedHeight = YogaConstants.IsUndefined(height) ? double.PositiveInfinity : height;
+            var normalizedWidth = Math.Max(0, YogaConstants.IsUndefined(width) ? double.PositiveInfinity : width);
+            var normalizedHeight = Math.Max(0, YogaConstants.IsUndefined(height) ? double.PositiveInfinity : height);
             textBlock.Measure(new Size(normalizedWidth, normalizedHeight));
             return MeasureOutput.Make(
                 (float)Math.Ceiling(textBlock.DesiredSize.Width),
