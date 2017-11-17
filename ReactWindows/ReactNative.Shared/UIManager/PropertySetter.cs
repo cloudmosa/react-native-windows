@@ -131,7 +131,13 @@ namespace ReactNative.UIManager
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                Exception inner = ex.InnerException;
+                inner.Data["OuterException"] = ex.ToString();
+                inner.Data["Method"] = Method.ToString();
+                inner.Data["Property"] = Name;
+                inner.Data["instance"] = instance.ToString();
+                inner.Data["args"] = args.ToString();
+                throw inner;
             }
             finally
             {
