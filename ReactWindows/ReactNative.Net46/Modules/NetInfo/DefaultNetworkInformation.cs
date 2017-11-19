@@ -11,12 +11,26 @@ namespace ReactNative.Modules.NetInfo
         public void Start()
         {
             _networkListManager = new NetworkListManager();
-            _networkListManager.NetworkConnectivityChanged += OnNetworkConnectivityChanged;
+            try
+            {
+                // NOTE: It might throw Exception on some computers.
+                //   The specified service does not exist as an installed service. (Exception from HRESULT: 0x80070424)
+                _networkListManager.NetworkConnectivityChanged += OnNetworkConnectivityChanged;
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public void Stop()
         {
-            _networkListManager.NetworkConnectivityChanged -= OnNetworkConnectivityChanged;
+            try
+            {
+                _networkListManager.NetworkConnectivityChanged -= OnNetworkConnectivityChanged;
+            }
+            catch (Exception)
+            {
+            }
             _networkListManager = null;
         }
 
