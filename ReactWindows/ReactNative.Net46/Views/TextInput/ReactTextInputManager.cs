@@ -400,6 +400,17 @@ namespace ReactNative.Views.TextInput
         }
 
         /// <summary>
+        /// Sets whether the text should be selected when user set focus.
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="selectTextOnUserFocus">The indicator.</param>
+        [ReactProp("selectTextOnUserFocus")]
+        public void SetSelectTextOnUserFocus(ReactTextBox view, bool selectTextOnUserFocus)
+        {
+            view.SelectTextOnUserFocus = selectTextOnUserFocus;
+        }
+
+        /// <summary>
         /// Create the shadow node instance.
         /// </summary>
         /// <returns>The shadow node instance.</returns>
@@ -421,7 +432,7 @@ namespace ReactNative.Views.TextInput
         {
             if (commandId == FocusTextInput)
             {
-                view.Focus();
+                view.FocusByCommand();
             }
             else if (commandId == BlurTextInput)
             {

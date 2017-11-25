@@ -48,6 +48,12 @@ namespace ReactNative.Views.TextInput
             set;
         }
 
+        public bool SelectTextOnUserFocus
+        {
+            get;
+            set;
+        }
+
         public bool PlaceholderActive
         {
             get { return _placeholderActive; }
@@ -118,6 +124,15 @@ namespace ReactNative.Views.TextInput
             }
         }
 
+        private bool _setFocusByCommand = false;
+
+        public void FocusByCommand()
+        {
+            _setFocusByCommand = true;
+            Focus();
+            _setFocusByCommand = false;
+        }
+
         protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
@@ -133,7 +148,8 @@ namespace ReactNative.Views.TextInput
                 this.Text = string.Empty;
                 this.Select(0, 0);
             }
-            else if (SelectTextOnFocus)
+            else if (SelectTextOnFocus ||
+                (!_setFocusByCommand && SelectTextOnUserFocus))
             {
                 this.Select(0, this.Text.Length);
             }
@@ -153,7 +169,7 @@ namespace ReactNative.Views.TextInput
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonDown(e);
-            if (!this.IsKeyboardFocusWithin && SelectTextOnFocus)
+            if (!this.IsKeyboardFocusWithin && (SelectTextOnFocus || SelectTextOnUserFocus))
             {
                 e.Handled = true;
                 this.Focus();
@@ -163,7 +179,7 @@ namespace ReactNative.Views.TextInput
         protected override void OnPreviewTouchDown(TouchEventArgs e)
         {
             base.OnPreviewTouchDown(e);
-            if (!this.IsKeyboardFocusWithin && SelectTextOnFocus)
+            if (!this.IsKeyboardFocusWithin && (SelectTextOnFocus || SelectTextOnUserFocus))
             {
                 e.Handled = true;
                 this.Focus();

@@ -330,6 +330,10 @@ var TextInput = createReactClass({
      */
     selectTextOnFocus: PropTypes.bool,
     /**
+     * Like selectTextOnFocus but only works on user interaction
+     */
+    selectTextOnUserFocus: PropTypes.bool,
+    /**
      * If true, the text field will blur when submitted.
      * The default value is true for single-line fields and false for
      * multiline fields. Note that for multiline fields, setting blurOnSubmit
@@ -677,6 +681,7 @@ var TextInput = createReactClass({
           onKeyPress={this.props.onKeyPress}
           clearTextOnFocus={this.props.clearTextOnFocus}
           selectTextOnFocus={this.props.selectTextOnFocus}
+          selectTextOnUserFocus={this.props.selectTextOnUserFocus}
           onLayout={this.props.onLayout}
           placeholder={this.props.placeholder}
           placeholderTextColor={this.props.placeholderTextColor}
