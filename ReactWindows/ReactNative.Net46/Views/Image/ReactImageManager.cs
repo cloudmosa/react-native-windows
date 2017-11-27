@@ -306,49 +306,56 @@ namespace ReactNative.Views.Image
         /// <param name="source">The source URI.</param>
         private void SetUriFromSingleSource(Border view, string source)
         {
-            var imageBrush = (ImageBrush)view.Background;
-            var tag = view.GetTag();
-
-            var disposable = default(SerialDisposable);
-            if (!_disposables.TryGetValue(tag, out disposable))
+            try
             {
-                disposable = new SerialDisposable();
-                _disposables.Add(tag, disposable);
-            }
+                var imageBrush = (ImageBrush)view.Background;
+                var tag = view.GetTag();
 
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            if (BitmapImageHelpers.IsBase64Uri(source))
-            {
-                disposable.Disposable = image.GetStreamLoadObservable().Subscribe(
-                    status => OnImageStatusUpdate(view, status),
-                    _ => OnImageFailed(view));
-
-                var stream = BitmapImageHelpers.GetStreamAsync(source);
-                image.StreamSource = stream;
-            }
-            else
-            {
-                disposable.Disposable = image.GetUriLoadObservable().Subscribe(
-                    status => OnImageStatusUpdate(view, status),
-                    _ => OnImageFailed(view));
-
-                var uri = new Uri(source);
-                if (uri.IsFile)
+                var disposable = default(SerialDisposable);
+                if (!_disposables.TryGetValue(tag, out disposable))
                 {
-                    var filePath = uri.LocalPath;
-                    if (!File.Exists(filePath))
-                    {
-                        OnImageFailed(view);
-                        return;
-                    }
+                    disposable = new SerialDisposable();
+                    _disposables.Add(tag, disposable);
                 }
-                image.UriSource = new Uri(source);
-            }
 
-            image.EndInit();
-            imageBrush.ImageSource = image;
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                if (BitmapImageHelpers.IsBase64Uri(source))
+                {
+                    disposable.Disposable = image.GetStreamLoadObservable().Subscribe(
+                        status => OnImageStatusUpdate(view, status),
+                        _ => OnImageFailed(view));
+
+                    var stream = BitmapImageHelpers.GetStreamAsync(source);
+                    image.StreamSource = stream;
+                }
+                else
+                {
+                    disposable.Disposable = image.GetUriLoadObservable().Subscribe(
+                        status => OnImageStatusUpdate(view, status),
+                        _ => OnImageFailed(view));
+
+                    var uri = new Uri(source);
+                    if (uri.IsFile)
+                    {
+                        var filePath = uri.LocalPath;
+                        if (!File.Exists(filePath))
+                        {
+                            OnImageFailed(view);
+                            return;
+                        }
+                    }
+                    image.UriSource = new Uri(source);
+                }
+
+                image.EndInit();
+                imageBrush.ImageSource = image;
+            }
+            catch (Exception ex)
+            {
+                OnImageFailed(view);
+            }
         }
 
         /// <summary>
