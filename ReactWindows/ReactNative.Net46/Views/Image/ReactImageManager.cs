@@ -325,10 +325,8 @@ namespace ReactNative.Views.Image
                     status => OnImageStatusUpdate(view, status),
                     _ => OnImageFailed(view));
 
-                using (var stream = BitmapImageHelpers.GetStreamAsync(source))
-                {
-                    image.StreamSource = stream;
-                }
+                var stream = BitmapImageHelpers.GetStreamAsync(source);
+                image.StreamSource = stream;
             }
             else
             {
