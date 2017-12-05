@@ -344,6 +344,7 @@ namespace ReactNative.Views.TextInput
         {
             view.AcceptsReturn = multiline;
             view.TextWrapping = multiline ? TextWrapping.Wrap : TextWrapping.NoWrap;
+            view.VerticalScrollBarVisibility = multiline ? ScrollBarVisibility.Visible : ScrollBarVisibility.Hidden;
         }
 
         /// <summary>
