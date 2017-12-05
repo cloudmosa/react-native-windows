@@ -308,7 +308,7 @@ namespace ReactNative.Views.TextInput
         [ReactProp("editable")]
         public void SetEditable(ReactTextBox view, bool editable)
         {
-            view.IsEnabled = editable;
+            view.IsReadOnly = editable;
         }
 
         /// <summary>
