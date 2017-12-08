@@ -481,7 +481,7 @@ namespace ReactNative.UIManager
             {
                 try
                 {
-                    foreach (var batch in _batches)
+                    foreach (var batch in _batches.ToList())
                     {
                         batch();
                     }
