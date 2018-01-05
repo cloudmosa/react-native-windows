@@ -334,6 +334,10 @@ var TextInput = createReactClass({
      */
     selectTextOnUserFocus: PropTypes.bool,
     /**
+      * If true, show caret even if editable={false}
+      */
+    showCaretAlways: PropTypes.bool,
+    /**
      * If true, the text field will blur when submitted.
      * The default value is true for single-line fields and false for
      * multiline fields. Note that for multiline fields, setting blurOnSubmit
@@ -682,6 +686,7 @@ var TextInput = createReactClass({
           clearTextOnFocus={this.props.clearTextOnFocus}
           selectTextOnFocus={this.props.selectTextOnFocus}
           selectTextOnUserFocus={this.props.selectTextOnUserFocus}
+          showCaretAlways={this.props.showCaretAlways}
           onLayout={this.props.onLayout}
           placeholder={this.props.placeholder}
           placeholderTextColor={this.props.placeholderTextColor}
