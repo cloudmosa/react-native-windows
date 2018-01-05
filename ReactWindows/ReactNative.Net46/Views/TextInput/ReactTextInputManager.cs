@@ -444,7 +444,12 @@ namespace ReactNative.Views.TextInput
         {
             if (commandId == FocusTextInput)
             {
-                view.FocusByCommand();
+                // Sometimes focus textbox does not work. Schedule a task to set focus in
+                // input priority can work around this issue.
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Input,
+                    new Action(delegate () {
+                        view.FocusByCommand();
+                }));
             }
             else if (commandId == BlurTextInput)
             {
