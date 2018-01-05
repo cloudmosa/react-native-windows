@@ -412,6 +412,17 @@ namespace ReactNative.Views.TextInput
         }
 
         /// <summary>
+        /// Set whether to show caret even if in read only mode
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="showCaretAlways">true to show caret always</param>
+        [ReactProp("showCaretAlways")]
+        public void SetShowCaretAlways(ReactTextBox view, bool showCaretAlways)
+        {
+            view.IsReadOnlyCaretVisible = showCaretAlways;
+        }
+
+        /// <summary>
         /// Create the shadow node instance.
         /// </summary>
         /// <returns>The shadow node instance.</returns>
@@ -466,7 +477,7 @@ namespace ReactNative.Views.TextInput
                 {
                     return;
                 }
-                
+
                 view.TextChanged -= OnTextChanged;
 
                 if (_onSelectionChange)
