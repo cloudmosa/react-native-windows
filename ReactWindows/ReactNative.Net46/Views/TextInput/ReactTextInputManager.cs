@@ -500,6 +500,7 @@ namespace ReactNative.Views.TextInput
                 view.Text = text ?? "";
                 view.SelectionStart = Math.Min(selectionStart, textLength);
                 view.SelectionLength = Math.Min(selectionLength, maxLength < 0 ? 0 : maxLength);
+                view.CaretIndex = Math.Min(textLength, maxLength);
 
                 if (_onSelectionChange)
                 {
