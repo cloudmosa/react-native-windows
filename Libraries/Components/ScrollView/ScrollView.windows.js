@@ -216,10 +216,11 @@ const ScrollView = createReactClass({
     /**
      * Determines when the keyboard should stay visible after a tap.
      *
-     *   - `'never'` (the default), tapping outside of the focused text input when the keyboard
-     *     is up dismisses the keyboard. When this happens, children won't receive the tap.
-     *   - `'always'`, the keyboard will not dismiss automatically, and the scroll view will not
-     *     catch taps, but children of the scroll view can catch taps.
+     *   - `'never'`, tapping outside of the focused text input when the keyboard is up
+     *     dismisses the keyboard. When this happens, children won't receive the tap.
+     *   - `'always'` (the default on Windows), the keyboard will not dismiss automatically,
+     *     and the scroll view will not catch taps, but children of the scroll view can catch
+     *     taps.
      *   - `'handled'`, the keyboard will not dismiss automatically when the tap was handled by
      *     a children, (or captured by an ancestor).
      *   - `false`, deprecated, use 'never' instead
@@ -410,6 +411,12 @@ const ScrollView = createReactClass({
      * @platform ios
      */
     DEPRECATED_sendUpdatedChildFrames: PropTypes.bool,
+  },
+
+  getDefaultProps(): Object {
+    return {
+      keyboardShouldPersistTaps: 'always',
+    };
   },
 
   mixins: [ScrollResponder.Mixin],
