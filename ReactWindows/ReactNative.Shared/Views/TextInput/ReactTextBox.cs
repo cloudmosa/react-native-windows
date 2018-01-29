@@ -1,13 +1,15 @@
-﻿using ReactNative.UIManager;
+using ReactNative.UIManager;
 using System.Threading;
-using System.Windows.Input;
-using System.Windows.Media;
 #if WINDOWS_UWP
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 #else
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 #endif
 
 namespace ReactNative.Views.TextInput
@@ -19,13 +21,14 @@ namespace ReactNative.Views.TextInput
         private Brush _textColor;
         private Brush _placeholderColor;
         private bool _placeholderActive;
+        private bool _selectionChangedSubscribed;
+        private bool _sizeChangedSubscribed;
 
         public ReactTextBox()
         {
-            SizeChanged += OnSizeChanged;
             PlaceholderActive = false;
-            TextColor = Brushes.Black;
-            PlaceholderColor = Brushes.LightGray;
+            TextColor = new SolidColorBrush(Colors.Black);
+            PlaceholderColor = new SolidColorBrush(Colors.LightGray);
         }
 
         public int CurrentEventCount
@@ -101,6 +104,64 @@ namespace ReactNative.Views.TextInput
             }
         }
 
+        public bool OnSelectionChange
+        {
+            get
+            {
+                return _selectionChangedSubscribed;
+            }
+            set
+            {
+                if (value != _selectionChangedSubscribed)
+                {
+                    _selectionChangedSubscribed = value;
+                    if (_selectionChangedSubscribed)
+                    {
+                        SelectionChanged += OnSelectionChanged;
+                    }
+                    else
+                    {
+                        SelectionChanged -= OnSelectionChanged;
+                    }
+                }
+            }
+        }
+
+        public bool OnContentSizeChange
+        {
+            get
+            {
+                return _sizeChangedSubscribed;
+            }
+            set
+            {
+                if (value != _sizeChangedSubscribed)
+                {
+                    _sizeChangedSubscribed = value;
+                    if (_sizeChangedSubscribed)
+                    {
+                        SizeChanged += OnSizeChanged;
+                    }
+                    else
+                    {
+                        SizeChanged -= OnSizeChanged;
+                    }
+                }
+            }
+        }
+
+        public bool AutoGrow
+        {
+            get;
+            set;
+        }
+
+        public bool DimensionsUpdated
+        {
+            get;
+            set;
+        }
+
         public int IncrementEventCount()
         {
             return Interlocked.Increment(ref _eventCount);
@@ -114,7 +175,13 @@ namespace ReactNative.Views.TextInput
                 return base.Text;
             }
             set {
-                if (this.PlaceholderActive && !this.IsFocused) {
+                bool isFocused = false;
+#if WINDOWS_UWP
+                isFocused = this.FocusState != FocusState.Unfocused;
+#else
+                isFocused = this.IsFocused;
+#endif
+                if (this.PlaceholderActive && !isFocused) {
                     if (string.IsNullOrEmpty(value))
                         return;
                     else if (value != this.PlaceholderText)
@@ -129,7 +196,11 @@ namespace ReactNative.Views.TextInput
         public void FocusByCommand()
         {
             _setFocusByCommand = true;
+#if WINDOWS_UWP
+            Focus(FocusState.Programmatic);
+#else
             Focus();
+#endif
             _setFocusByCommand = false;
         }
 
@@ -166,6 +237,7 @@ namespace ReactNative.Views.TextInput
             }
         }
 
+#if !WINDOWS_UWP
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonDown(e);
@@ -185,20 +257,38 @@ namespace ReactNative.Views.TextInput
                 this.Focus();
             }
         }
+#endif
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (DimensionsUpdated)
+            {
+                DimensionsUpdated = false;
+                return;
+            }
+
             this.GetReactContext()
                 .GetNativeModule<UIManagerModule>()
                 .EventDispatcher
                 .DispatchEvent(
-                    new ReactTextChangedEvent(
+                    new ReactTextInputContentSizeChangedEvent(
                         this.GetTag(),
-                        Text,
                         e.NewSize.Width,
-                        e.NewSize.Height,
-                        IncrementEventCount(),
-                        ReactTextChangedEvent.Reason.SizeChanged));
+                        e.NewSize.Height));
+        }
+
+        private void OnSelectionChanged(object sender, RoutedEventArgs e)
+        {
+            var start = this.SelectionStart;
+            var length = this.SelectionLength;
+            this.GetReactContext()
+                .GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(
+                    new ReactTextInputSelectionEvent(
+                        this.GetTag(),
+                        start,
+                        start + length));
         }
     }
 }

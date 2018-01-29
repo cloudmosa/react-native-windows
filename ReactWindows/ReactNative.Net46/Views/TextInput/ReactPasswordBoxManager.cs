@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using ReactNative.Reflection;
 using ReactNative.UIManager;
 using ReactNative.UIManager.Annotations;
+using ReactNative.UIManager.Events;
 using ReactNative.Views.Text;
 using System;
 using System.Collections.Generic;
@@ -64,48 +65,6 @@ namespace ReactNative.Views.TextInput
                                 {
                                     { "bubbled" , "onEndEditing" },
                                     { "captured" , "onEndEditingCapture" }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "topFocus",
-                        new Dictionary<string, object>()
-                        {
-                            {
-                                "phasedRegistrationNames",
-                                new Dictionary<string, string>()
-                                {
-                                    { "bubbled" , "onFocus" },
-                                    { "captured" , "onFocusCapture" }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "topBlur",
-                        new Dictionary<string, object>()
-                        {
-                            {
-                                "phasedRegistrationNames",
-                                new Dictionary<string, string>()
-                                {
-                                    { "bubbled" , "onBlur" },
-                                    { "captured" , "onBlurCapture" }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "topKeyPress",
-                        new Dictionary<string, object>()
-                        {
-                            {
-                                "phasedRegistrationNames",
-                                new Dictionary<string, string>()
-                                {
-                                    { "bubbled" , "onKeyPress" },
-                                    { "captured" , "onKeyPressCapture" }
                                 }
                             }
                         }
@@ -284,6 +243,31 @@ namespace ReactNative.Views.TextInput
         }
 
         /// <summary>
+        /// Sets whether the view is a tab stop.
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="isTabStop">
+        /// <code>true</code> if the view is a tab stop, otherwise <code>false</code> (control can't get keyboard focus or accept keyboard input in this case).
+        /// </param>
+        /// 
+        [ReactProp("isTabStop")]
+        public void SetIsTabStop(PasswordBox view, bool isTabStop)
+        {
+            view.IsTabStop = isTabStop;
+        }
+
+        /// <summary>
+        /// Sets the tab index for the view.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <param name="tabIndex">The tab index.</param>
+        [ReactProp("tabIndex")]
+        public void SetTabIndex(PasswordBox view, int tabIndex)
+        {
+            view.TabIndex = tabIndex;
+        }
+
+        /// <summary>
         /// Sets the max character length property on the <see cref="PasswordBox"/>.
         /// </summary>
         /// <param name="view">The view instance.</param>
@@ -388,6 +372,7 @@ namespace ReactNative.Views.TextInput
             view.GotFocus += OnGotFocus;
             view.LostFocus += OnLostFocus;
             view.KeyDown += OnKeyDown;
+            view.KeyUp += OnKeyUp;
             view.PreviewKeyDown += OnPreviewKeyDown;
         }
 
@@ -403,6 +388,7 @@ namespace ReactNative.Views.TextInput
             base.OnDropViewInstance(reactContext, view);
             view.PreviewKeyDown -= OnPreviewKeyDown;
             view.KeyDown -= OnKeyDown;
+            view.KeyUp -= OnKeyUp;
             view.LostFocus -= OnLostFocus;
             view.GotFocus -= OnGotFocus;
             view.PasswordChanged -= OnPasswordChanged;
@@ -415,10 +401,9 @@ namespace ReactNative.Views.TextInput
         /// <param name="dimensions">The output buffer.</param>
         public override void SetDimensions(PasswordBox view, Dimensions dimensions)
         {
-            Canvas.SetLeft(view, dimensions.X);
-            Canvas.SetTop(view, dimensions.Y);
-            view.Width = dimensions.Width;
-            view.Height = dimensions.Height;
+            base.SetDimensions(view, dimensions);
+            view.MinWidth = dimensions.Width;
+            view.MinHeight = dimensions.Height;
         }
 
         private void OnPasswordChanged(object sender, RoutedEventArgs e)
@@ -431,8 +416,6 @@ namespace ReactNative.Views.TextInput
                     new ReactTextChangedEvent(
                         textBox.GetTag(),
                         textBox.Password,
-                        textBox.ActualWidth,
-                        textBox.ActualHeight,
                         0,
                         ReactTextChangedEvent.Reason.TextChanged));
         }
@@ -444,7 +427,7 @@ namespace ReactNative.Views.TextInput
                 .GetNativeModule<UIManagerModule>()
                 .EventDispatcher
                 .DispatchEvent(
-                    new ReactTextInputFocusEvent(textBox.GetTag()));
+                    new FocusEvent(textBox.GetTag()));
         }
 
         private void OnLostFocus(object sender, RoutedEventArgs e)
@@ -455,7 +438,7 @@ namespace ReactNative.Views.TextInput
                 .EventDispatcher;
 
             eventDispatcher.DispatchEvent(
-                new ReactTextInputBlurEvent(textBox.GetTag()));
+                new BlurEvent(textBox.GetTag()));
 
             eventDispatcher.DispatchEvent(
                 new ReactTextInputEndEditingEvent(
@@ -465,46 +448,22 @@ namespace ReactNative.Views.TextInput
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            var keyValue = "";
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    keyValue = "Enter";
-                    break;
-                case Key.Back:
-                    keyValue = "Backspace";
-                    break;
-                case Key.Space:
-                    keyValue = " ";
-                    break;
-                case Key.Escape:
-                    keyValue = "Escape";
-                    break;
-                default:
-                    {
-                        KeyConverter k = new KeyConverter();
-                        keyValue = k.ConvertToString(e.Key);
-                    }
-                    break;
-            }
-            if (keyValue != "")
-            {
-                var textBox = (PasswordBox)sender;
-                textBox.GetReactContext()
-                    .GetNativeModule<UIManagerModule>()
-                    .EventDispatcher
-                    .DispatchEvent(
-                        new ReactTextInputKeyPressEvent(
-                            textBox.GetTag(),
-                            keyValue));
-            }
+            var textBox = (PasswordBox)sender;
+            textBox.GetReactContext()
+                .GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(
+                    new KeyEvent(
+                        KeyEvent.KeyPressEventString,
+                        textBox.GetTag(),
+                        e.Key));
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
+            var textBox = (PasswordBox)sender;
             if (e.Key == Key.Enter)
             {
-                var textBox = (PasswordBox)sender;
                 e.Handled = true;
                 textBox.GetReactContext()
                     .GetNativeModule<UIManagerModule>()
@@ -514,6 +473,32 @@ namespace ReactNative.Views.TextInput
                             textBox.GetTag(),
                             textBox.Password));
             }
+
+            if (!e.Handled)
+            {
+                textBox.GetReactContext()
+                    .GetNativeModule<UIManagerModule>()
+                    .EventDispatcher
+                    .DispatchEvent(
+                        new KeyEvent(
+                            KeyEvent.KeyDownEventString,
+                            textBox.GetTag(),
+                            e.Key));
+            }
+        }
+
+        private void OnKeyUp(object sender, KeyEventArgs e)
+        {
+            var textBox = (PasswordBox)sender;
+            var keyCode = e.Key.GetKeyCode();
+            textBox.GetReactContext()
+                .GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(
+                    new KeyEvent(
+                        KeyEvent.KeyUpEventString,
+                        textBox.GetTag(),
+                        e.Key));
         }
     }
 }

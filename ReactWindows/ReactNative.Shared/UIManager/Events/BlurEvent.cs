@@ -1,24 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using ReactNative.UIManager.Events;
+using Newtonsoft.Json.Linq;
 using System;
 
-namespace ReactNative.Views.TextInput
+namespace ReactNative.UIManager.Events
 {
-    class ReactTextInputKeyPressEvent : Event
+    class BlurEvent : Event
     {
-        private readonly string _key;
-
-        public ReactTextInputKeyPressEvent(int viewTag, string key)
+        public BlurEvent(int viewTag)
             : base(viewTag)
         {
-            _key = key;
         }
 
         public override string EventName
         {
             get
             {
-                return "topKeyPress";
+                return "topBlur";
             }
         }
 
@@ -33,10 +29,9 @@ namespace ReactNative.Views.TextInput
         public override void Dispatch(RCTEventEmitter eventEmitter)
         {
             var eventData = new JObject
-            {
-                { "target", ViewTag },
-                { "key", _key },
-            };
+                {
+                    { "target", ViewTag },
+                };
 
             eventEmitter.receiveEvent(ViewTag, EventName, eventData);
         }

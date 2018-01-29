@@ -1,5 +1,12 @@
-﻿using PCLStorage;
+using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+#if WINDOWS_UWP
+using Windows.Storage;
+#else
+using PCLStorage;
+#endif
 
 namespace ReactNative.Common
 {
@@ -29,7 +36,7 @@ namespace ReactNative.Common
             get
             {
 #if WINDOWS_UWP
-                return FileSystem.Current.LocalStorage.Path;
+                return ApplicationData.Current.LocalFolder.Path;
 #else
                 if (_localStoragePath != null)
                     return _localStoragePath;
@@ -39,18 +46,20 @@ namespace ReactNative.Common
         }
 
         /// <summary>
-        /// Get the LocalStorage as PCLStorage IFolder instance
+        /// Get given specific filePath in local storage
         /// </summary>
-        public static IFolder LocalStorage
+        /// <param name="filePath">Relative file path in local storage</param>
+        /// <param name="token">cancel token</param>
+        /// <returns>full path of |filePath| in local storage</returns>
+        public static async Task<string> GetLocalStorageFilePathAsync(string filePath, CancellationToken token)
         {
-            get
-            {
 #if WINDOWS_UWP
-                return FileSystem.Current.LocalStorage;
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var storageFile = await localFolder.GetFileAsync(filePath).AsTask(token).ConfigureAwait(false);
+            return storageFile.Path;
 #else
-                return new FileSystemFolder(LocalStoragePath);
+            return await Task.FromResult(Path.Combine(LocalStoragePath, filePath));
 #endif
-            }
         }
 
         /// <summary>

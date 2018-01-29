@@ -341,7 +341,7 @@ namespace ReactNative.Modules.Storage
 
         private async Task<IFolder> GetAsyncStorageFolder(bool createIfNotExists)
         {
-            var localFolder = WindowsStorage.LocalStorage;
+            IFolder localFolder = new FileSystemFolder(WindowsStorage.LocalStoragePath);
 
             var existsCheck = await localFolder.CheckExistsAsync(AsyncStorageHelpers.DirectoryName).ConfigureAwait(false);
             if (existsCheck == ExistenceCheckResult.FolderExists)
