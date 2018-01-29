@@ -263,18 +263,11 @@ namespace ReactNative.Views.View
         [ReactProp("borderColor", CustomType = "Color")]
         public void SetBorderColor(BorderedCanvas view, uint? color)
         {
-            if (view.Border == null)
-            {
-                GetBorderProps(view).Color = color;
-            }
-            else
-            {
-                var border = GetOrCreateBorder(view);
-                border.BorderBrush = color.HasValue
-                    ? new SolidColorBrush(ColorHelpers.Parse(color.Value))
-                    : _defaultBorderBrush;
-                TransferBackgroundBrush(view);
-            }
+            var border = GetOrCreateBorder(view);
+            border.BorderBrush = color.HasValue
+                ? new SolidColorBrush(ColorHelpers.Parse(color.Value))
+                : _defaultBorderBrush;
+            TransferBackgroundBrush(view);
         }
 
         /// <summary>
