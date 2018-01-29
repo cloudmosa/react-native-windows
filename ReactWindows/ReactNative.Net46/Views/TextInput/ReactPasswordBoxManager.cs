@@ -356,7 +356,8 @@ namespace ReactNative.Views.TextInput
             }
             else if (commandId == ReactTextInputManager.BlurTextInput)
             {
-                Keyboard.ClearFocus();
+                if (view.IsKeyboardFocused)
+                    Keyboard.ClearFocus();
             }
         }
 
