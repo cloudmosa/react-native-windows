@@ -15,7 +15,8 @@
   "scripts": {
     "test": "jasmine",
     "lint": "eslint .",
-    "flow-check": "flow check"
+    "flow-check": "flow check",
+    "postinstall": "git submodule update --init -- Yoga"
   },
   "files": [
     "Libraries",
