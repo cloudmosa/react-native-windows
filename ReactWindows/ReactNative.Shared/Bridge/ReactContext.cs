@@ -445,7 +445,7 @@ namespace ReactNative.Bridge
             }
             else
             {
-                ExceptionDispatchInfo.Capture(exception).Throw();
+                DispatcherHelpers.RunOnDispatcher(() => ExceptionDispatchInfo.Capture(exception).Throw());
             }
         }
 
