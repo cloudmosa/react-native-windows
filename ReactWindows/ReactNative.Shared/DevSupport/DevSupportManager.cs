@@ -163,7 +163,7 @@ namespace ReactNative.DevSupport
                 var lastUpdateTime = Windows.ApplicationModel.Package.Current.InstalledDate.UtcDateTime;
                 var localFolder = ApplicationData.Current.LocalFolder.Path;
 #else
-                var lastUpdateTime = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
+                var lastUpdateTime = File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location);
                 var localFolder = WindowsStorage.LocalStoragePath;
 #endif
                 var localFileName = Path.Combine(localFolder, JSBundleFileName);
