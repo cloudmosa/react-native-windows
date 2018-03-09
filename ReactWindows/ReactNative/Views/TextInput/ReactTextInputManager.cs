@@ -611,6 +611,8 @@ namespace ReactNative.Views.TextInput
             view.GotFocus -= OnGotFocus;
             view.TextChanged -= OnTextChanged;
             view.TextChanging -= OnTextChanging;
+            view.OnSelectionChange = false;
+            view.OnContentSizeChange = false;
         }
 
         /// <summary>
