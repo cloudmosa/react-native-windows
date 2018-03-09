@@ -537,6 +537,8 @@ namespace ReactNative.Views.TextInput
             view.LostFocus -= OnLostFocus;
             view.GotFocus -= OnGotFocus;
             view.TextChanged -= OnTextChanged;
+            view.OnSelectionChange = false;
+            view.OnContentSizeChange = false;
         }
 
         public override void SetDimensions(ReactTextBox view, Dimensions dimensions)
