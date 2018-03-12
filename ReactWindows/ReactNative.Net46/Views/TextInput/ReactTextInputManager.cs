@@ -172,7 +172,31 @@ namespace ReactNative.Views.TextInput
         [ReactProp("placeholder")]
         public void SetPlaceholder(ReactTextBox view, string placeholder)
         {
-            view.PlaceholderText = placeholder;
+            view.TextChanged -= OnTextChanged;
+
+            var removeOnSelectionChange = view.OnSelectionChange;
+            if (removeOnSelectionChange)
+            {
+                view.OnSelectionChange = false;
+            }
+
+            var text = placeholder;
+            var selectionStart = view.SelectionStart;
+            var selectionLength = view.SelectionLength;
+            var textLength = text?.Length ?? 0;
+            var maxLength = textLength - selectionLength;
+
+            view.PlaceholderText = text ?? "";
+            view.SelectionStart = Math.Min(selectionStart, textLength);
+            view.SelectionLength = Math.Min(selectionLength, maxLength < 0 ? 0 : maxLength);
+            view.CaretIndex = Math.Min(textLength, maxLength < 0 ? 0 : maxLength);
+
+            if (removeOnSelectionChange)
+            {
+                view.OnSelectionChange = true;
+            }
+
+            view.TextChanged += OnTextChanged;
         }
 
         /// <summary>
