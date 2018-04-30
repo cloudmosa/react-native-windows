@@ -370,8 +370,8 @@ namespace ReactNative.Views.TextInput
         {
             base.AddEventEmitters(reactContext, view);
             view.PasswordChanged += OnPasswordChanged;
-            view.GotFocus += OnGotFocus;
-            view.LostFocus += OnLostFocus;
+            view.GotKeyboardFocus += OnGotKeyboardFocus;
+            view.LostKeyboardFocus += OnLostKeyboardFocus;
             view.KeyDown += OnKeyDown;
             view.KeyUp += OnKeyUp;
             view.PreviewKeyDown += OnPreviewKeyDown;
@@ -390,8 +390,8 @@ namespace ReactNative.Views.TextInput
             view.PreviewKeyDown -= OnPreviewKeyDown;
             view.KeyDown -= OnKeyDown;
             view.KeyUp -= OnKeyUp;
-            view.LostFocus -= OnLostFocus;
-            view.GotFocus -= OnGotFocus;
+            view.LostKeyboardFocus -= OnLostKeyboardFocus;
+            view.GotKeyboardFocus -= OnGotKeyboardFocus;
             view.PasswordChanged -= OnPasswordChanged;
         }
 
@@ -421,7 +421,7 @@ namespace ReactNative.Views.TextInput
                         ReactTextChangedEvent.Reason.TextChanged));
         }
 
-        private void OnGotFocus(object sender, RoutedEventArgs e)
+        private void OnGotKeyboardFocus(object sender, RoutedEventArgs e)
         {
             var textBox = (PasswordBox)sender;
             textBox.GetReactContext()
@@ -431,7 +431,7 @@ namespace ReactNative.Views.TextInput
                     new FocusEvent(textBox.GetTag()));
         }
 
-        private void OnLostFocus(object sender, RoutedEventArgs e)
+        private void OnLostKeyboardFocus(object sender, RoutedEventArgs e)
         {
             var textBox = (PasswordBox)sender;
             var eventDispatcher = textBox.GetReactContext()
