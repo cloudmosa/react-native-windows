@@ -973,6 +973,7 @@ _renderWindows: function() {
 },
 
 _onFocus: function(event: Event) {
+  this.focus();
   if (this.props.onFocus) {
     this.props.onFocus(event);
   }
