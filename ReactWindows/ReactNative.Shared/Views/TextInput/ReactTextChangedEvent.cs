@@ -11,6 +11,7 @@ namespace ReactNative.Views.TextInput
     class ReactTextChangedEvent : Event
     {
         private readonly string _text;
+        private readonly string _compositionText;
         private readonly int _eventCount;
 
         public enum Reason
@@ -27,14 +28,20 @@ namespace ReactNative.Views.TextInput
         /// <param name="text">The text.</param>
         /// <param name="eventCount">The event count.</param>
         public ReactTextChangedEvent(int viewTag, string text, int eventCount)
-            : this(viewTag, text, eventCount, Reason.TextChanged)
+            : this(viewTag, text, "", eventCount, Reason.TextChanged)
         {
         }
 
         public ReactTextChangedEvent(int viewTag, string text, int eventCount, Reason reason)
+            : this(viewTag, text, "", eventCount, reason)
+        {
+        }
+
+        public ReactTextChangedEvent(int viewTag, string text, string compositionText, int eventCount, Reason reason)
             : base(viewTag)
         {
             _text = text;
+            _compositionText = compositionText;
             _eventCount = eventCount;
             _reason = reason;
         }
@@ -73,6 +80,7 @@ namespace ReactNative.Views.TextInput
             var eventData = new JObject
             {
                 { "text", _text },
+                { "compositionText", _compositionText },
                 { "eventCount", _eventCount },
                 { "target", ViewTag },
             };
