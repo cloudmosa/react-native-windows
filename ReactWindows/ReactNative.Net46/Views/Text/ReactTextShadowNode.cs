@@ -1,4 +1,4 @@
-﻿using Facebook.Yoga;
+using Facebook.Yoga;
 using ReactNative.Bridge;
 using ReactNative.Reflection;
 using ReactNative.UIManager;
@@ -8,6 +8,10 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+
+#if CUSTOMIZATION_CLOUDMOSA
+using System.IO;
+#endif
 
 namespace ReactNative.Views.Text
 {
@@ -238,6 +242,28 @@ namespace ReactNative.Views.Text
 
             if (_fontFamily != null)
             {
+#if CUSTOMIZATION_CLOUDMOSA
+                string[] fontParts = _fontFamily.Split('#');
+
+                var fontFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ReactAssets", fontParts.First());
+                if (File.Exists(fontFilePath))
+                {
+                    // [0] First try to locate external font
+                    textBlock.FontFamily = new FontFamily(fontFilePath + "#" + fontParts.Last());
+                }
+                else
+                {
+                    // [1] Otherwise try to locate font in application resource
+                    // convert font string into something WPF can use
+                    // https://msdn.microsoft.com/en-us/library/ms753303(v=vs.110).aspx
+                    // e.g. FontFamily(new System.Uri("pack://application:,,,/"), "./Assets/#fontname")
+                    string[] path = _fontFamily.Split('/');
+                    path = path.Take(path.Count() - 1).ToArray();
+                    string cleanPath = "./" + string.Join("/", path) + "/";
+
+                    textBlock.FontFamily = new FontFamily(new System.Uri("pack://application:,,,/"), cleanPath + "#" + fontParts.Last());
+                }
+#else
                 // convert font string into something WPF can use
                 // https://msdn.microsoft.com/en-us/library/ms753303(v=vs.110).aspx
                 // e.g. FontFamily(new System.Uri("pack://application:,,,/"), "./Assets/#fontname")
@@ -246,6 +272,7 @@ namespace ReactNative.Views.Text
                 string cleanPath = "./" + string.Join("/", path) + "/";
                 string[] fontParts = _fontFamily.Split('#');
                 textBlock.FontFamily = new FontFamily(new System.Uri("pack://application:,,,/"), cleanPath + "#" + fontParts.Last());
+#endif
             }
             else
             {
