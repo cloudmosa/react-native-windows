@@ -21,8 +21,11 @@ namespace ReactNative.Views.TextInput
         private Brush _textColor;
         private Brush _placeholderColor;
         private bool _placeholderActive;
+        private bool _textCompositionChangedSubscribed;
         private bool _selectionChangedSubscribed;
         private bool _sizeChangedSubscribed;
+        private string _compositionText = string.Empty;
+        private bool _inTextCompositing = false;
 
         public ReactTextBox()
         {
@@ -104,6 +107,35 @@ namespace ReactNative.Views.TextInput
             }
         }
 
+        public bool OnTextCompositionChange
+        {
+            get
+            {
+                return _textCompositionChangedSubscribed;
+            }
+            set
+            {
+                if (value != _textCompositionChangedSubscribed)
+                {
+                    _textCompositionChangedSubscribed = value;
+#if !WINDOWS_UWP
+                    if (_textCompositionChangedSubscribed)
+                    {
+                        TextCompositionManager.AddPreviewTextInputHandler(this, OnPreviewTextInput);
+                        TextCompositionManager.AddPreviewTextInputStartHandler(this, OnPreviewTextInputStart);
+                        TextCompositionManager.AddPreviewTextInputUpdateHandler(this, OnPreviewTextInputUpdate);
+                    }
+                    else
+                    {
+                        TextCompositionManager.RemovePreviewTextInputHandler(this, OnPreviewTextInput);
+                        TextCompositionManager.RemovePreviewTextInputStartHandler(this, OnPreviewTextInputStart);
+                        TextCompositionManager.RemovePreviewTextInputUpdateHandler(this, OnPreviewTextInputUpdate);
+                    }
+#endif
+                }
+            }
+        }
+
         public bool OnSelectionChange
         {
             get
@@ -167,7 +199,8 @@ namespace ReactNative.Views.TextInput
             return Interlocked.Increment(ref _eventCount);
         }
 
-        public string Text {
+        public string Text
+        {
             get
             {
                 if (this.PlaceholderActive && base.Text == this.PlaceholderText)
@@ -188,6 +221,13 @@ namespace ReactNative.Views.TextInput
                         PlaceholderActive = false;
                 }
                 base.Text = value;
+            }
+        }
+
+        public string CompositionText {
+            get
+            {
+                return _compositionText;
             }
         }
 
@@ -290,5 +330,28 @@ namespace ReactNative.Views.TextInput
                         start,
                         start + length));
         }
+
+#if !WINDOWS_UWP
+        private void OnPreviewTextInputStart(object sender, TextCompositionEventArgs e)
+        {
+            // Text composition started.
+            _compositionText = e.TextComposition.CompositionText;
+            _inTextCompositing = true;
+        }
+
+        private void OnPreviewTextInputUpdate(object sender, TextCompositionEventArgs e)
+        {
+            // Text composition changed.
+            _compositionText = e.TextComposition.CompositionText;
+            _inTextCompositing = true;
+        }
+
+        private void OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Text composition commited.
+            _compositionText = e.TextComposition.CompositionText;
+            _inTextCompositing = false;
+        }
+#endif
     }
 }

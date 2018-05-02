@@ -483,7 +483,8 @@ namespace ReactNative.Views.TextInput
                 }
 
                 view.TextChanged -= OnTextChanged;
-
+                var onTextCompositionChange = view.OnTextCompositionChange;
+                view.OnTextCompositionChange = false;
                 var removeOnSelectionChange = view.OnSelectionChange;
                 if (removeOnSelectionChange)
                 {
@@ -505,7 +506,7 @@ namespace ReactNative.Views.TextInput
                 {
                     view.OnSelectionChange = true;
                 }
-
+                view.OnTextCompositionChange = onTextCompositionChange;
                 view.TextChanged += OnTextChanged;
             }
             else if ((textAndSelectionUpdate = extraData as Tuple<int, string, int, int>) != null)
@@ -517,7 +518,8 @@ namespace ReactNative.Views.TextInput
                 }
 
                 view.TextChanged -= OnTextChanged;
-
+                var onTextCompositionChange = view.OnTextCompositionChange;
+                view.OnTextCompositionChange = false;
                 var removeOnSelectionChange = view.OnSelectionChange;
                 if (removeOnSelectionChange)
                 {
@@ -540,7 +542,7 @@ namespace ReactNative.Views.TextInput
                 {
                     view.OnSelectionChange = true;
                 }
-
+                view.OnTextCompositionChange = onTextCompositionChange;
                 view.TextChanged += OnTextChanged;
             }
         }
@@ -563,6 +565,7 @@ namespace ReactNative.Views.TextInput
             view.TextChanged -= OnTextChanged;
             view.OnSelectionChange = false;
             view.OnContentSizeChange = false;
+            view.OnTextCompositionChange = false;
         }
 
         public override void SetDimensions(ReactTextBox view, Dimensions dimensions)
@@ -599,11 +602,17 @@ namespace ReactNative.Views.TextInput
             view.KeyDown += OnKeyDown;
             view.KeyUp += OnKeyUp;
             view.PreviewKeyDown += OnPreviewKeyDown;
+            view.OnTextCompositionChange = true;
         }
 
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (ReactTextBox)sender;
+
+            // NOTE: Ignore TextChange because of setting placeholder text.
+            if (textBox.PlaceholderActive && textBox.Text == textBox.PlaceholderText)
+                return;
+
             textBox.GetReactContext()
                 .GetNativeModule<UIManagerModule>()
                 .EventDispatcher
@@ -611,6 +620,7 @@ namespace ReactNative.Views.TextInput
                     new ReactTextChangedEvent(
                         textBox.GetTag(),
                         textBox.Text,
+                        textBox.CompositionText,
                         textBox.CurrentEventCount,
                         ReactTextChangedEvent.Reason.TextChanged));
         }
