@@ -16,7 +16,7 @@
     "test": "jasmine",
     "lint": "eslint .",
     "flow-check": "flow check",
-    "postinstall": "git clone https://github.com/facebook/yoga.git Yoga && cd Yoga && git checkout 836eaa62dfc3b13fbd6a202e4470075573147304"
+    "postinstall": "rd /S /Q Yoga & git clone https://github.com/facebook/yoga.git Yoga && cd Yoga && git checkout 836eaa62dfc3b13fbd6a202e4470075573147304"
   },
   "files": [
     "Libraries",
