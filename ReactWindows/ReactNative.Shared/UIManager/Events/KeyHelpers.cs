@@ -13,7 +13,11 @@ namespace ReactNative.UIManager.Events
     using Key = VirtualKey;
 #endif
 
+#if CUSTOMIZATION_CLOUDMOSA
+    public static class KeyHelpers
+#else
     static class KeyHelpers
+#endif
     {
         public static int GetKeyCode(this Key key)
         {
