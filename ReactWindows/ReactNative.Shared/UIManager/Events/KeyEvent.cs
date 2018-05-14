@@ -15,7 +15,11 @@ namespace ReactNative.UIManager.Events
     using Key = VirtualKey;
 #endif
 
+#if CUSTOMIZATION_CLOUDMOSA
+    public class KeyEvent : Event
+#else
     class KeyEvent : Event
+#endif
     {
         public const string KeyDownEventString = "topKeyDown";
         public const string KeyUpEventString = "topKeyUp";

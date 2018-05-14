@@ -2,7 +2,11 @@ using Facebook.Yoga;
 
 namespace ReactNative.UIManager
 {
+#if CUSTOMIZATION_CLOUDMOSA
+    public class EdgeSpacing
+#else
     class EdgeSpacing
+#endif
     {
         /// <summary>
         /// Spacing type that represents the left direction. E.g. <code>marginLeft</code>.

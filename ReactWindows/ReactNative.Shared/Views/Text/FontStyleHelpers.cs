@@ -1,4 +1,4 @@
-﻿#if WINDOWS_UWP
+#if WINDOWS_UWP
 using Windows.UI.Text;
 #else
 using System.Windows;
@@ -6,7 +6,11 @@ using System.Windows;
 
 namespace ReactNative.Views.Text
 {
+#if CUSTOMIZATION_CLOUDMOSA
+    public static class FontStyleHelpers
+#else
     static class FontStyleHelpers
+#endif
     {
         public static FontWeight? ParseFontWeight(string fontWeightString)
         {

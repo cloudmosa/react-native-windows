@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,11 @@ using static System.FormattableString;
 
 namespace ReactNative.Reflection
 {
+#if CUSTOMIZATION_CLOUDMOSA
+    public static class EnumHelpers
+#else
     static class EnumHelpers
+#endif
     {
         private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, object>> s_enumCache =
             new ConcurrentDictionary<Type, IReadOnlyDictionary<string, object>>();

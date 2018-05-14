@@ -3,7 +3,11 @@ using System;
 
 namespace ReactNative.UIManager.Events
 {
+#if CUSTOMIZATION_CLOUDMOSA
+    public class FocusEvent : Event
+#else
     class FocusEvent : Event
+#endif
     {
         public FocusEvent(int viewTag)
             : base(viewTag)
