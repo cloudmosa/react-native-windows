@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using PCLStorage;
 using ReactNative.Bridge;
 using ReactNative.Common;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,6 +47,10 @@ namespace ReactNative.Modules.Storage
                     var value = await GetAsync(key).ConfigureAwait(false);
                     data.Add(new JArray(key, value));
                 }
+            }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
             }
             finally
             {
@@ -103,6 +108,10 @@ namespace ReactNative.Modules.Storage
                     }
                 }
             }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
+            }
             finally
             {
                 _mutex.Release();
@@ -146,6 +155,10 @@ namespace ReactNative.Modules.Storage
                         break;
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
             }
             finally
             {
@@ -203,6 +216,10 @@ namespace ReactNative.Modules.Storage
                     }
                 }
             }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
+            }
             finally
             {
                 _mutex.Release();
@@ -221,6 +238,7 @@ namespace ReactNative.Modules.Storage
         [ReactMethod]
         public async void clear(ICallback callback)
         {
+            var error = default(JObject);
             await _mutex.WaitAsync().ConfigureAwait(false);
             try
             {
@@ -230,19 +248,30 @@ namespace ReactNative.Modules.Storage
                     await storageFolder.DeleteAsync().ConfigureAwait(false);
                 }
             }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
+            }
             finally
             {
                 _mutex.Release();
             }
 
-            callback.Invoke();
+            if (error != null)
+            {
+                callback.Invoke(error);
+            }
+            else
+            {
+                callback.Invoke();
+            }
         }
 
         [ReactMethod]
         public async void getAllKeys(ICallback callback)
         {
             var keys = new JArray();
-
+            var error = default(JObject);
             await _mutex.WaitAsync().ConfigureAwait(false);
             try
             {
@@ -260,12 +289,23 @@ namespace ReactNative.Modules.Storage
                     }
                 }
             }
+            catch (Exception e)
+            {
+                error = AsyncStorageHelpers.GetErrorFromException(e);
+            }
             finally
             {
                 _mutex.Release();
             }
 
-            callback.Invoke(null, keys);
+            if (error != null)
+            {
+                callback.Invoke(error, null);
+            }
+            else
+            {
+                callback.Invoke(null, keys);
+            }
         }
 
         public override void OnReactInstanceDispose()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -153,6 +154,26 @@ namespace ReactNative.Modules.Storage
         public static JObject GetInvalidValueError(string key)
         {
             return GetError(key, "Invalid Value");
+        }
+
+        /// <summary>
+        /// Compose error data like Promise.Resolve(exception)
+        /// </summary>
+        /// <param name="e">The exception</param>
+        /// <returns>Error data for callback</returns>
+        public static JObject GetErrorFromException(Exception e)
+        {
+            var errorData = e?.Data;
+            var userInfo = errorData != null
+                ? JToken.FromObject(errorData)
+                : null;
+            return new JObject
+            {
+                { "code", "EUNSPECIFIED" },
+                { "message", e.Message },
+                { "stack", e?.StackTrace },
+                { "userInfo", userInfo },
+            };
         }
     }
 }
