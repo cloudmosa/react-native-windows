@@ -385,6 +385,34 @@ namespace ReactNative.UIManager
                         { "registrationName", "onMessage" },
                     }
                 },
+                {
+                    "topDragEnter",
+                    new Map
+                    {
+                        { "registrationName", "onDragEnter" }
+                    }
+                },
+                {
+                    "topDragOver",
+                    new Map
+                    {
+                        { "registrationName", "onDragOver" }
+                    }
+                },
+                {
+                    "topDrop",
+                    new Map
+                    {
+                        { "registrationName", "onDrop" }
+                    }
+                },
+                {
+                    "topDragLeave",
+                    new Map
+                    {
+                        { "registrationName", "onDragLeave" }
+                    }
+                },
             };
         }
 

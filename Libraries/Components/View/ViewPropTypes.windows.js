@@ -506,4 +506,36 @@ module.exports = {
      * @platform windows
      */
     tooltip: PropTypes.string,
+
+  /**
+   * Specify if the view support to drag
+   *
+   * @platform windows
+   */
+  draggable: PropTypes.bool,
+
+  /**
+   * Specify if the view support to be a drooped target
+   *
+   * @platform windows
+   */
+  droppable: PropTypes.bool,
+
+  /**
+   * Specify a meaningful string to support drag-n-drop
+   * Only views with same |dragdropTag| support to drag-n-drop
+   * If a dropped target does not have same |dragdropTag|,
+   * the target cannot being drop and will receive onDragEnter/onDragOver/onDragLeave,
+   * but on onDrop.
+   *
+   * @platform windows
+   */
+  dragdropTag: PropTypes.string,
+
+  /**
+   * Custom data will pass into onDragEnter/onDragOver/onDragLeave/onDrop
+   *
+   * @platform windows
+   */
+  dragdropData: PropTypes.object,
 };
