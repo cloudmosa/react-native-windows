@@ -3,6 +3,11 @@ using ReactNative.Touch;
 using ReactNative.UIManager.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -26,6 +31,23 @@ namespace ReactNative.UIManager
     {
         private readonly IDictionary<TFrameworkElement, Action<TFrameworkElement, Dimensions>> _transforms =
             new Dictionary<TFrameworkElement, Action<TFrameworkElement, Dimensions>>();
+
+        private static readonly string kDragdropTagName = "dragdropTag";
+        private static readonly string kDragdropDataName = "dragdropData";
+        private static readonly string kDragEnterDisposableKey = "dragEnterSubscriber";
+        private static readonly string kDragOverDisposableKey = "dragOverSubscriber";
+        private static readonly string kDragLeaveDisposableKey = "dragLeaveSubscriber";
+        private static readonly string kDragdropDataFormat = "Newtonsoft.Json.Linq.JObject";
+
+        // For delayed DragEnter/DragLeave.
+        // WPF will send DragEnter/DragLeave if dragging into subview
+        // If we find this kind of event emiited in a short time, don't notify JS.
+        private static readonly int kDragEnterLeaveDelayEventTime = 10;
+        private static readonly int kDragEnterLeaveDelayEventThreshold = 100;
+        private int _lastDragEnterTime = 0;
+        private int _lastDragLeaveTime = 0;
+        private int _lastDragEnterViewTag = 0;
+        private int _lastDragLeaveViewTag = 0;
 
         /// <summary>
         /// Set's the  <typeparamref name="TFrameworkElement"/> styling layout
@@ -125,6 +147,84 @@ namespace ReactNative.UIManager
         }
 
         /// <summary>
+        /// Sets if the target view is able to drag during drag-n-drop
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="draggable">true to support drag-n-drop</param>
+        [ReactProp("draggable")]
+        public void SetDraggable(TFrameworkElement view, bool draggable)
+        {
+            if (view.GetDraggable() == draggable)
+                return;
+
+            if (draggable)
+            {
+                view.MouseDown += OnPointerPressed;
+                view.MouseMove += OnPointerMove;
+            }
+            else
+            {
+                view.MouseDown -= OnPointerPressed;
+                view.MouseMove -= OnPointerMove;
+            }
+
+            view.SetDraggable(draggable);
+        }
+
+        /// <summary>
+        /// Sets if the target view supports for drop during drag-n-drop
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="draggable">true to support drag-n-drop</param>
+        [ReactProp("droppable")]
+        public void SetDroppable(TFrameworkElement view, bool droppable)
+        {
+            if (view.AllowDrop == droppable)
+                return;
+
+            if (droppable)
+            {
+                view.Drop += OnDrop;
+                view.AddDisposable(kDragEnterDisposableKey, RegisterDragEnterHandler(view));
+                view.AddDisposable(kDragOverDisposableKey, RegisterDragOverHandler(view));
+                view.AddDisposable(kDragLeaveDisposableKey, RegisterDragLeaveHandler(view));
+            }
+            else
+            {
+                view.Drop -= OnDrop;
+                view.CleanDisposable(kDragEnterDisposableKey);
+                view.CleanDisposable(kDragOverDisposableKey);
+                view.CleanDisposable(kDragLeaveDisposableKey);
+            }
+
+            view.AllowDrop = droppable;
+        }
+
+        /// <summary>
+        /// Sets the custom tag for view to support drag-n-drop
+        /// Only if target view's dragdropTag and the dragging view's dragdropTag,
+        /// the target view accepts to drop.
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="dragdropTag">Custom meaningful string</param>
+        [ReactProp("dragdropTag")]
+        public void SetDragDropTag(TFrameworkElement view, string dragdropTag)
+        {
+            view.SetDragDropTag(dragdropTag);
+        }
+
+        /// <summary>
+        /// Sets the custom data passing from drag item into drop item
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <param name="data">Custom data will pass from drag item during drag-n-drop</param>
+        [ReactProp("dragdropData")]
+        public void SetDragDropData(TFrameworkElement view, JObject data)
+        {
+            view.SetDragDropData(data);
+        }
+
+        /// <summary>
         /// Called when view is detached from view hierarchy and allows for
         /// additional cleanup by the <see cref="IViewManager"/> subclass.
         /// </summary>
@@ -136,8 +236,12 @@ namespace ReactNative.UIManager
         /// </remarks>
         public override void OnDropViewInstance(ThemedReactContext reactContext, TFrameworkElement view)
         {
+            view.Drop -= OnDrop;
             view.MouseEnter -= OnPointerEntered;
+            view.MouseDown -= OnPointerPressed;
+            view.MouseMove -= OnPointerMove;
             view.MouseLeave -= OnPointerExited;
+            view.CleanDisposable();
             _transforms.Remove(view);
         }
 
@@ -166,10 +270,214 @@ namespace ReactNative.UIManager
             TouchHandler.OnPointerEntered(view, e);
         }
 
+        private void OnPointerPressed(object sender, MouseEventArgs e)
+        {
+            var view = (TFrameworkElement)sender;
+            view.SetMouseDownPoint(e.GetPosition(view));
+        }
+
+        private void OnPointerMove(object sender, MouseEventArgs e)
+        {
+            var view = (TFrameworkElement)sender;
+            if (view != null && e.LeftButton == MouseButtonState.Pressed)
+            {
+                // [0] Only start drap-n-drop if moving exceed threshold
+                var mouseDownPoint = view.GetMouseDownPoint();
+                var currentPoint = e.GetPosition(view);
+                if (Math.Abs(currentPoint.X - mouseDownPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                    Math.Abs(currentPoint.Y - mouseDownPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+                {
+                    return;
+                }
+
+                // [1] Setup dragdropData
+                var data = new JObject
+                {
+                    { kDragdropTagName, view.GetDragDropTag() },
+                };
+                var dragdropData = view.GetDragDropData();
+                if (dragdropData != null)
+                {
+                    data[kDragdropDataName] = dragdropData;
+                }
+
+                // [2] Start drag-n-drop
+                DragDrop.DoDragDrop(view, data, DragDropEffects.Move);
+            }
+        }
+
         private void OnPointerExited(object sender, MouseEventArgs e)
         {
             var view = (TFrameworkElement)sender;
             TouchHandler.OnPointerExited(view, e);
+        }
+
+        private bool MakeDragData(TFrameworkElement view, DragEventArgs args, out JObject data)
+        {
+            if (args.Data.GetDataPresent(kDragdropDataFormat))
+            {
+                var dragData = (JObject)args.Data.GetData(kDragdropDataFormat);
+                var locationPos = args.GetPosition(view);
+                var timestamp = Environment.TickCount;
+                // Simulate TouchHandler data structure, but without pageX/pageY.
+                // We don't have ReactRootView here.
+                // TODO(kudo): Consider move the logic into TouchHandler and we can then support pageX/pageY.
+                data = new JObject
+                {
+                    { "locationX",  locationPos.X },
+                    { "locationY",  locationPos.Y },
+                    { "timestamp",  timestamp },
+                };
+                data.Merge(dragData);
+                return true;
+            }
+            data = default(JObject);
+            return false;
+        }
+
+        private bool IsTargetViewDroppable(TFrameworkElement view, JObject dragData)
+        {
+            var tag = dragData.Value<string>(kDragdropTagName);
+            if (tag != null && tag != "" && tag == view.GetDragDropTag())
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private IDisposable RegisterDragEnterHandler(TFrameworkElement view)
+        {
+            return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
+                h => view.DragEnter += h,
+                h => view.DragEnter -= h)
+                .Do(e =>
+                {
+                    _lastDragEnterViewTag = view.GetTag();
+                    _lastDragEnterTime = Environment.TickCount;
+                })
+                .Delay(TimeSpan.FromMilliseconds(kDragEnterLeaveDelayEventTime), DispatcherScheduler.Instance)
+                .Subscribe(e =>
+                {
+                    var args = e.EventArgs;
+                    view.SetShouldSendDragOver(true);
+
+                    JObject data;
+                    if (!MakeDragData(view, args, out data))
+                        return;
+
+                    var viewTag = view.GetTag();
+                    var now = Environment.TickCount;
+                    if (now - _lastDragLeaveTime < kDragEnterLeaveDelayEventThreshold && viewTag == _lastDragLeaveViewTag)
+                    {
+                        return;
+                    }
+
+                    view.GetReactContext()
+                        .GetNativeModule<UIManagerModule>()
+                        .EventDispatcher
+                        .DispatchEvent(new DragDropEvent(viewTag, "topDragEnter", data));
+                });
+        }
+
+        /// <summary>
+        /// Setup DragOver handler for RN.
+        ///
+        /// We need special handler that the WPF's DragOver will send events frequently,
+        /// even to block RN bridge even we don't move mouse.
+        /// This handler will only send event to RN if
+        ///     1. There is mouse moving.
+        ///     2. Throttle control for 100ms
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <returns>Resource disposable for cleanup</returns>
+        private IDisposable RegisterDragOverHandler(TFrameworkElement view)
+        {
+            return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
+                h => view.DragOver += h,
+                h => view.DragOver -= h)
+                // [0] Handle the DragEventArgs to setup if target view is droppable
+                .Select(e =>
+                {
+
+                    var args = e.EventArgs;
+                    args.Effects = DragDropEffects.None;
+                    args.Handled = true;
+
+                    JObject data;
+                    if (!MakeDragData(view, args, out data))
+                        return null;
+                    if (IsTargetViewDroppable(view, data))
+                    {
+                        args.Effects = DragDropEffects.Move;
+                    }
+                    return Tuple.Create<EventPattern<DragEventArgs>, JObject>(e, data);
+                })
+                .Where(tuple => tuple != null)
+                // [1] Send event only if position has changed
+                .DistinctUntilChanged(tuple => tuple.Item1.EventArgs.GetPosition(view))
+                // [2] Throttle for 100ms
+                .Sample(TimeSpan.FromMilliseconds(100), DispatcherScheduler.Instance)
+                // [3] Send event to JS
+                .Subscribe(tuple =>
+                {
+                    var data = tuple.Item2;
+                    if (!view.GetShouldSendDragOver())
+                        return;
+
+                    view.GetReactContext()
+                        .GetNativeModule<UIManagerModule>()
+                        .EventDispatcher
+                        .DispatchEvent(new DragDropEvent(view.GetTag(), "topDragOver", data));
+                });
+        }
+
+        private void OnDrop(object sender, DragEventArgs args)
+        {
+            var view = (TFrameworkElement)sender;
+            view.SetShouldSendDragOver(false);
+
+            JObject data;
+            if (!MakeDragData(view, args, out data))
+                return;
+
+            view.GetReactContext()
+                .GetNativeModule<UIManagerModule>()
+                .EventDispatcher
+                .DispatchEvent(new DragDropEvent(view.GetTag(), "topDrop", data));
+        }
+
+        private IDisposable RegisterDragLeaveHandler(TFrameworkElement view)
+        {
+            return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
+                h => view.DragLeave += h,
+                h => view.DragLeave -= h)
+                .Do(e =>
+                {
+                    _lastDragLeaveViewTag = view.GetTag();
+                    _lastDragLeaveTime = Environment.TickCount;
+                })
+                .Delay(TimeSpan.FromMilliseconds(kDragEnterLeaveDelayEventTime), DispatcherScheduler.Instance)
+                .Subscribe(e =>
+                {
+                    var args = e.EventArgs;
+                    view.SetShouldSendDragOver(false);
+
+                    JObject data;
+                    if (!MakeDragData(view, args, out data))
+                        return;
+
+                    var viewTag = view.GetTag();
+                    var now = Environment.TickCount;
+                    if (now - _lastDragEnterTime < kDragEnterLeaveDelayEventThreshold && viewTag == _lastDragEnterViewTag)
+                    {
+                        return;
+                    }
+
+                    view.GetReactContext()
+                        .GetNativeModule<UIManagerModule>()
+                        .EventDispatcher
+                        .DispatchEvent(new DragDropEvent(viewTag, "topDragLeave", data));
+                });
         }
 
         /// <summary>
@@ -286,7 +594,7 @@ namespace ReactNative.UIManager
             else
             {
                 var transform = new MatrixTransform(projectionMatrix.M11,
-					projectionMatrix.M12,
+                    projectionMatrix.M12,
                     projectionMatrix.M21,
                     projectionMatrix.M22,
                     projectionMatrix.OffsetX,

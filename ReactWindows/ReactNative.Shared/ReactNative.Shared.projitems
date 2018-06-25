@@ -161,6 +161,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\BorderExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\ColorHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\Events\BlurEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UIManager\Events\DragDropEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\Events\FocusEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\Events\KeyEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UIManager\IUIBlock.cs" />
