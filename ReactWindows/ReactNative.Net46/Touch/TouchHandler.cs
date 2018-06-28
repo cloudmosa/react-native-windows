@@ -10,7 +10,11 @@ using System.Windows.Media;
 
 namespace ReactNative.Touch
 {
+#if CUSTOMIZATION_CLOUDMOSA
+    public class TouchHandler : IDisposable
+#else
     class TouchHandler : IDisposable
+#endif
     {
         private readonly FrameworkElement _view;
         private readonly List<ReactPointer> _pointers;
@@ -78,6 +82,7 @@ namespace ReactNative.Touch
             var reactView = GetReactViewTarget(originalSource, rootPoint.Position);
             if (reactView != null && reactView.CaptureTouch(e.TouchDevice))
             {
+                e.Handled = true;
                 _capturedElement = reactView;
                 var viewPoint = rootPoint.Position;
                 var reactTag = reactView.GetReactCompoundView().GetReactTagAtPoint(reactView, viewPoint);
@@ -108,6 +113,7 @@ namespace ReactNative.Touch
             var reactView = GetReactViewTarget(originalSource, rootPoint);
             if (reactView != null && reactView.CaptureMouse())
             {
+                e.Handled = true;
                 _capturedElement = reactView;
                 var viewPoint = e.GetPosition(reactView);
                 var reactTag = reactView.GetReactCompoundView().GetReactTagAtPoint(reactView, viewPoint);
