@@ -39,16 +39,6 @@ namespace ReactNative.UIManager
         private static readonly string kDragLeaveDisposableKey = "dragLeaveSubscriber";
         private static readonly string kDragdropDataFormat = "Newtonsoft.Json.Linq.JObject";
 
-        // For delayed DragEnter/DragLeave.
-        // WPF will send DragEnter/DragLeave if dragging into subview
-        // If we find this kind of event emitted in a short time, don't notify JS.
-        private static readonly int kDragEnterLeaveDelayEventTime = 10;
-        private static readonly int kDragEnterLeaveDelayEventThreshold = 100;
-        private int _lastDragEnterTime = 0;
-        private int _lastDragLeaveTime = 0;
-        private int _lastDragEnterViewTag = 0;
-        private int _lastDragLeaveViewTag = 0;
-
         /// <summary>
         /// Set's the  <typeparamref name="TFrameworkElement"/> styling layout
         /// properties, based on the <see cref="JObject"/> map.
@@ -357,12 +347,6 @@ namespace ReactNative.UIManager
             return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
                 h => view.DragEnter += h,
                 h => view.DragEnter -= h)
-                .Do(e =>
-                {
-                    _lastDragEnterViewTag = view.GetTag();
-                    _lastDragEnterTime = Environment.TickCount;
-                })
-                .Delay(TimeSpan.FromMilliseconds(kDragEnterLeaveDelayEventTime), DispatcherScheduler.Instance)
                 .Subscribe(e =>
                 {
                     var args = e.EventArgs;
@@ -373,11 +357,6 @@ namespace ReactNative.UIManager
                         return;
 
                     var viewTag = view.GetTag();
-                    var now = Environment.TickCount;
-                    if (now - _lastDragLeaveTime < kDragEnterLeaveDelayEventThreshold && viewTag == _lastDragLeaveViewTag)
-                    {
-                        return;
-                    }
 
                     view.GetReactContext()
                         .GetNativeModule<UIManagerModule>()
@@ -458,12 +437,6 @@ namespace ReactNative.UIManager
             return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
                 h => view.DragLeave += h,
                 h => view.DragLeave -= h)
-                .Do(e =>
-                {
-                    _lastDragLeaveViewTag = view.GetTag();
-                    _lastDragLeaveTime = Environment.TickCount;
-                })
-                .Delay(TimeSpan.FromMilliseconds(kDragEnterLeaveDelayEventTime), DispatcherScheduler.Instance)
                 .Subscribe(e =>
                 {
                     var args = e.EventArgs;
@@ -474,11 +447,6 @@ namespace ReactNative.UIManager
                         return;
 
                     var viewTag = view.GetTag();
-                    var now = Environment.TickCount;
-                    if (now - _lastDragEnterTime < kDragEnterLeaveDelayEventThreshold && viewTag == _lastDragEnterViewTag)
-                    {
-                        return;
-                    }
 
                     view.GetReactContext()
                         .GetNativeModule<UIManagerModule>()
