@@ -49,8 +49,6 @@ namespace ReactNative.UIManager
         private int _lastDragEnterViewTag = 0;
         private int _lastDragLeaveViewTag = 0;
 
-        private static int s_dragingViewTag = 0;
-
         /// <summary>
         /// Set's the  <typeparamref name="TFrameworkElement"/> styling layout
         /// properties, based on the <see cref="JObject"/> map.
@@ -291,10 +289,6 @@ namespace ReactNative.UIManager
                 {
                     return;
                 }
-                if (s_dragingViewTag == view.GetTag())
-                {
-                    return;
-                }
 
                 // [1] Setup dragdropData
                 var data = new JObject
@@ -311,7 +305,6 @@ namespace ReactNative.UIManager
                 try
                 {
                     DragDrop.DoDragDrop(view, data, DragDropEffects.Move);
-                    s_dragingViewTag = view.GetTag();
                 }
                 catch (Exception ex)
                 {
