@@ -294,7 +294,28 @@ namespace ReactNative.UIManager
                 // [2] Start drag-n-drop
                 try
                 {
-                    DragDrop.DoDragDrop(view, data, DragDropEffects.Move);
+                    var viewTag = view.GetTag();
+
+                    var eventData = new JObject
+                    {
+                        { "timestamp",  Environment.TickCount },
+                    };
+                    view.GetReactContext()
+                        .GetNativeModule<UIManagerModule>()
+                        .EventDispatcher
+                        .DispatchEvent(new DragDropEvent(viewTag, "topDragStart", eventData));
+
+                    var dragdropEffects = DragDrop.DoDragDrop(view, data, DragDropEffects.Move);
+
+                    eventData = new JObject
+                    {
+                        { "timestamp",  Environment.TickCount },
+                        { "dropEffect", DragDropEffectsToString(dragdropEffects) },
+                    };
+                    view.GetReactContext()
+                        .GetNativeModule<UIManagerModule>()
+                        .EventDispatcher
+                        .DispatchEvent(new DragDropEvent(viewTag, "topDragEnd", eventData));
                 }
                 catch (Exception ex)
                 {
@@ -597,6 +618,23 @@ namespace ReactNative.UIManager
             }
 
             view.RenderTransform = null;
+        }
+
+        private static string DragDropEffectsToString(DragDropEffects dragDropEffects)
+        {
+            if (dragDropEffects == DragDropEffects.Copy)
+            {
+                return "copy";
+            }
+            if (dragDropEffects == DragDropEffects.Move)
+            {
+                return "move";
+            }
+            if (dragDropEffects == DragDropEffects.Link)
+            {
+                return "link";
+            }
+            return "none";
         }
     }
 }
