@@ -413,6 +413,20 @@ namespace ReactNative.UIManager
                         { "registrationName", "onDragLeave" }
                     }
                 },
+                {
+                    "topDragStart",
+                    new Map
+                    {
+                        { "registrationName", "onDragStart" }
+                    }
+                },
+                {
+                    "topDragEnd",
+                    new Map
+                    {
+                        { "registrationName", "onDragEnd" }
+                    }
+                },
             };
         }
 
