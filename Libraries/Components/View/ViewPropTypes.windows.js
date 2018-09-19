@@ -49,6 +49,19 @@ export type ViewLayoutEvent = {
   }
 }
 
+type CursorType =
+  | "app_starting"
+  | "arrow"
+  | "cross"
+  | "default"
+  | "hand"
+  | "help"
+  | "ibeam"
+  | "no"
+  | "none"
+  | "pen"
+  | "wait";
+
 // There's no easy way to create a different type if(Platform.isTVOS):
 // so we must include TVViewProps
 export type ViewProps = {
@@ -83,6 +96,7 @@ export type ViewProps = {
   collapsable?: bool,
   needsOffscreenAlphaCompositing?: bool,
   tooltip?: string,
+  cursor?: CursorType,
 } & TVViewProps;
 
 module.exports = {
@@ -506,6 +520,25 @@ module.exports = {
      * @platform windows
      */
     tooltip: PropTypes.string,
+
+    /**
+     * Define the cursor for current view.
+     *
+     * @platform windows
+     */
+    cursor: PropTypes.oneOf([
+      'app_starting',
+      'arrow',
+      'cross',
+      'default',
+      'hand',
+      'help',
+      'ibeam',
+      'no',
+      'none',
+      'pen',
+      'wait',
+    ]),
 
   /**
    * Specify if the view support to drag

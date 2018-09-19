@@ -136,6 +136,49 @@ namespace ReactNative.UIManager
             ToolTipService.SetToolTip(view, tooltip);
         }
 
+        [ReactProp("cursor")]
+        public void SetCursor(TFrameworkElement view, string cursorString)
+        {
+            Cursor cursor;
+            switch (cursorString)
+            {
+                case "app_starting":
+                    cursor = Cursors.AppStarting;
+                    break;
+                case "arrow":
+                    cursor = Cursors.Arrow;
+                    break;
+                case "cross":
+                    cursor = Cursors.Cross;
+                    break;
+                case "hand":
+                    cursor = Cursors.Hand;
+                    break;
+                case "help":
+                    cursor = Cursors.Help;
+                    break;
+                case "ibeam":
+                    cursor = Cursors.IBeam;
+                    break;
+                case "no":
+                    cursor = Cursors.No;
+                    break;
+                case "none":
+                    cursor = Cursors.None;
+                    break;
+                case "pen":
+                    cursor = Cursors.Pen;
+                    break;
+                case "wait":
+                    cursor = Cursors.Wait;
+                    break;
+                default:
+                    cursor = null;
+                    break;
+            }
+            view.Cursor = cursor;
+        }
+
         /// <summary>
         /// Sets if the target view is able to drag during drag-n-drop
         /// </summary>
