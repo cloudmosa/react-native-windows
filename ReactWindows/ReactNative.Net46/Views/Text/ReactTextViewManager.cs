@@ -1,4 +1,4 @@
-﻿using ReactNative.Reflection;
+using ReactNative.Reflection;
 using ReactNative.UIManager;
 using ReactNative.UIManager.Annotations;
 using System;
@@ -18,6 +18,15 @@ namespace ReactNative.Views.Text
     public class ReactTextViewManager : ViewParentManager<TextBlock, ReactTextShadowNode>
     {
         private static readonly IReactCompoundView s_compoundView = new ReactTextCompoundView();
+
+        static ReactTextViewManager()
+        {
+            TextBlock.FocusableProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(true));
+            TextSelectableExtension.RegisterCommandHandlers(typeof(TextBlock), true, true, true);
+
+            // remove the focus rectangle around the control
+            TextBlock.FocusVisualStyleProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata((object)null));
+        }
 
         /// <summary>
         /// The name of the view manager.
@@ -78,7 +87,10 @@ namespace ReactNative.Views.Text
         [ReactProp("selectable")]
         public void SetSelectable(TextBlock view, bool selectable)
         {
-            throw new NotImplementedException();
+            if (selectable)
+                view.AttachTextEditor();
+            else
+                view.DetachTextEditor();
         }
 
         /// <summary>
