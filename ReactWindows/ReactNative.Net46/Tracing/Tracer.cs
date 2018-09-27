@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.Tracing;
 
 namespace ReactNative.Tracing
 {
@@ -28,9 +29,9 @@ namespace ReactNative.Tracing
         /// <param name="tag">The trace tag.</param>
         /// <param name="name">The event name.</param>
         /// <returns>The null logging activity builder with a fake Start method.</returns>
-        public static NullLoggingActivityBuilder Trace(int tag, string name)
+        public static LoggingActivityBuilder Trace(int tag, string name)
         {
-            return new NullLoggingActivityBuilder();
+            return new LoggingActivityBuilder(ReactNativeWindowsEventSource.INSTANCE, name, tag);
         }
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace ReactNative.Tracing
         /// <param name="eventName">The event name.</param>
         public static void Write(int tag, string eventName)
         {
+            ReactNativeWindowsEventSource.INSTANCE.Write(tag, eventName);
         }
 
         /// <summary>
@@ -50,6 +52,34 @@ namespace ReactNative.Tracing
         /// <param name="ex">The exception.</param>
         public static void Error(int tag, string eventName, Exception ex)
         {
+            ReactNativeWindowsEventSource.INSTANCE.Error(tag, eventName, ex.ToString());
+        }
+    }
+
+    [EventSource(Name = "ReactNativeWindows")]
+    public sealed class ReactNativeWindowsEventSource : EventSource
+    {
+        public static ReactNativeWindowsEventSource INSTANCE = new ReactNativeWindowsEventSource();
+
+        [Event(1, Level = EventLevel.Informational)]
+        public void Write(int tag, string eventName)
+        {
+            if (IsEnabled())
+                WriteEvent(1, tag, eventName);
+        }
+
+        [Event(2, Level = EventLevel.Error)]
+        public void Error(int tag, string eventName, string exception)
+        {
+            if (IsEnabled())
+                WriteEvent(2, tag, eventName, exception);
+        }
+
+        [Event(3, Level = EventLevel.Informational)]
+        public void Trace(int tag, string eventName, long elapsedTicks)
+        {
+            if (IsEnabled())
+                WriteEvent(3, tag, eventName, elapsedTicks);
         }
     }
 }
