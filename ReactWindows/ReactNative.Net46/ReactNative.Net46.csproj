@@ -156,12 +156,12 @@
     <Compile Include="Shell\MainReactPackage.cs" />
     <Compile Include="Touch\IOnInterceptTouchEventListener.cs" />
     <Compile Include="Touch\TouchHandler.cs" />
-    <Compile Include="Tracing\NullLoggingActivityBuilderExtensions.generated.cs">
-      <DependentUpon>NullLoggingActivityBuilderExtensions.tt</DependentUpon>
+    <Compile Include="Tracing\LoggingActivityBuilderExtensions.generated.cs">
+      <DependentUpon>LoggingActivityBuilderExtensions.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Tracing\NullLoggingActivityBuilder.cs" />
+    <Compile Include="Tracing\LoggingActivityBuilder.cs" />
     <Compile Include="Tracing\Tracer.cs" />
     <Compile Include="UIManager\BaseViewManager.cs" />
     <Compile Include="UIManager\DisplayMetrics.cs" />
@@ -191,9 +191,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Tracing\NullLoggingActivityBuilderExtensions.tt">
+    <Content Include="Tracing\LoggingActivityBuilderExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>NullLoggingActivityBuilderExtensions.generated.cs</LastGenOutput>
+      <LastGenOutput>LoggingActivityBuilderExtensions.generated.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
