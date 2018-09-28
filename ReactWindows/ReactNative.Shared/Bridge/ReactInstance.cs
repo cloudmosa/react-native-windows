@@ -107,7 +107,10 @@ namespace ReactNative.Bridge
                         _bridge.SetGlobalVariable("__fbBatchedBridgeConfig", BuildModulesConfig());
                     }
 
-                    _bundleLoader.LoadScript(_bridge);
+                    using (Tracer.Trace(Tracer.TRACE_TAG_REACT_BRIDGE, "EvaluateJavaScript").Start())
+                    {
+                        _bundleLoader.LoadScript(_bridge);
+                    }
                 }).ConfigureAwait(false);
             }
         }
