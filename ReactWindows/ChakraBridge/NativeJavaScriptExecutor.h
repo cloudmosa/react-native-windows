@@ -4,7 +4,11 @@
 #include "ChakraHost.h"
 #include "ChakraStringResult.h"
 
+#ifdef _WINRT_DLL
 using namespace Platform;
+#else
+using namespace System;
+#endif
 
 namespace ChakraBridge {
 
@@ -100,8 +104,14 @@ public:
     /// A compount result with the JSON stringified value and an error code if any occurred.
     /// </returns>
     ChakraStringResult FlushedQueue();
+
 private:
-    ChakraHost host;
+  static inline size_t StringLength(String^ string);
+  static inline const wchar_t* StringChars(String^ string);
+  static inline String^ CreateString(const wchar_t* szBuf, size_t length);
+
+private:
+    ChakraHost* host;
 };
 
 };

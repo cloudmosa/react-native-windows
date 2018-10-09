@@ -226,7 +226,12 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\ChakraBridge.Net46\ChakraBridge.Net46.vcxproj">
+      <Project>{6e9e672f-fa99-4967-b7a5-7e4b834faeb3}</Project>
+      <Name>ChakraBridge.Net46</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\ReactNative.Shared\ReactNative.Shared.projitems" Label="Shared" />
   <Import Project="..\..\Yoga\csharp\Facebook.Yoga\Facebook.Yoga.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,11 +1,13 @@
-﻿#pragma once
+#pragma once
 
+#ifdef _WINRT_DLL
 #include <collection.h>
 #include <ppltasks.h>
+#endif
+
 #include <jsrt.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "ChakraStringResult.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

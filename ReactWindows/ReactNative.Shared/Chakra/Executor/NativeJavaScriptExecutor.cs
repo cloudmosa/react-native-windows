@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ReactNative.Bridge;
+using ReactNative.Common;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Windows.Storage;
 
 namespace ReactNative.Chakra.Executor
 {
@@ -109,7 +109,7 @@ namespace ReactNative.Chakra.Executor
 
             try
             {
-                var binPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, BytecodeFileName);
+                var binPath = Path.Combine(WindowsStorage.LocalStoragePath, BytecodeFileName);
 
                 if (_useSerialization)
                 {
