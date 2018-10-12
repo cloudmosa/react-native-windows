@@ -177,7 +177,7 @@ JsValueRef CALLBACK NativeRequire(JsValueRef callee, bool isConstructCall, JsVal
 	auto host = (ChakraHost*)callbackState;
 
 	// Assert the argument count.
-	if (argumentCount != 2)
+	if (argumentCount != 3)
 	{
 		ThrowException(L"Expected only one parameter to nativeRequire.");
 		return JS_INVALID_REFERENCE;
