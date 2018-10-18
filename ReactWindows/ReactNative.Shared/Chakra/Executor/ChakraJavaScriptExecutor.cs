@@ -2,9 +2,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ReactNative.Bridge;
 using ReactNative.Common;
+using ReactNative.Tracing;
 using System;
 using System.Diagnostics;
 using System.IO;
+#if !WINDOWS_UWP
+using System.IO.MemoryMappedFiles;
+#endif
 using System.Text;
 using System.Threading.Tasks;
 using static System.FormattableString;
@@ -47,9 +51,12 @@ namespace ReactNative.Chakra.Executor
         /// </summary>
         public ChakraJavaScriptExecutor()
         {
-            _runtime = JavaScriptRuntime.Create();
-            _context = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
-            InitializeChakra();
+            using (Tracer.Trace(Tracer.TRACE_TAG_REACT_BRIDGE, "Intialize ChakraJavaScriptExecutors").Start())
+            {
+                _runtime = JavaScriptRuntime.Create();
+                _context = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
+                InitializeChakra();
+            }
         }
 
         /// <summary>
@@ -308,7 +315,7 @@ namespace ReactNative.Chakra.Executor
             ushort argumentCount,
             IntPtr callbackData)
         {
-            if (argumentCount != 2)
+            if (argumentCount != 3)
             {
                 throw new ArgumentOutOfRangeException(nameof(argumentCount), "Expected exactly two arguments (global and moduleId).");
             }
@@ -480,6 +487,7 @@ namespace ReactNative.Chakra.Executor
             }
         }
 
+#if WINDOWS_UWP
         class IndexedJavaScriptUnbundle : IJavaScriptUnbundle
         {
             private const int HeaderSize = 12;
@@ -544,6 +552,79 @@ namespace ReactNative.Chakra.Executor
                 _stream.Dispose();
             }
         }
+#else
+        class IndexedJavaScriptUnbundle : IJavaScriptUnbundle
+        {
+            private const int HeaderSize = 12;
+
+            private readonly string _sourcePath;
+
+            private MemoryMappedFile _mmapFile;
+            private byte[] _moduleTable;
+            private int _baseOffset;
+
+            public IndexedJavaScriptUnbundle(string sourcePath)
+            {
+                _sourcePath = sourcePath;
+            }
+
+            public JavaScriptUnbundleModule GetModule(int index)
+            {
+                var offset = InetHelpers.LittleEndianToHost(BitConverter.ToUInt32(_moduleTable, index * 8));
+                var length = InetHelpers.LittleEndianToHost(BitConverter.ToUInt32(_moduleTable, index * 8 + 4));
+
+                using (var accessor = _mmapFile.CreateViewAccessor(_baseOffset + offset, length))
+                {
+                    var moduleData = new byte[length];
+                    if (accessor.ReadArray<byte>(0, moduleData, 0, (int)length) < length)
+                    {
+                        throw new InvalidOperationException("Reached end of file before end of unbundle module.");
+                    }
+
+                    var source = Encoding.UTF8.GetString(moduleData);
+                    var sourceUrl = index + ".js";
+                    return new JavaScriptUnbundleModule(source, sourceUrl);
+                }
+            }
+
+            public string GetStartupCode()
+            {
+                _mmapFile = MemoryMappedFile.CreateFromFile(_sourcePath);
+
+                var header = new byte[HeaderSize];
+                using (var accessor = _mmapFile.CreateViewAccessor())
+                {
+                     if (accessor.ReadArray<byte>(0, header, 0, HeaderSize) < HeaderSize)
+                    {
+                        throw new InvalidOperationException("Reached end of file before end of indexed unbundle header.");
+                    }
+
+                    var numberOfTableEntries = InetHelpers.LittleEndianToHost(BitConverter.ToUInt32(header, 4));
+                    var startupCodeSize = InetHelpers.LittleEndianToHost(BitConverter.ToUInt32(header, 8));
+                    var moduleTableSize = numberOfTableEntries * 8 /* bytes per entry */;
+                    _baseOffset = HeaderSize + (int)moduleTableSize;
+                    _moduleTable = new byte[moduleTableSize];
+                    if (accessor.ReadArray<byte>(HeaderSize, _moduleTable, 0, (int)moduleTableSize) < moduleTableSize)
+                    {
+                        throw new InvalidOperationException("Reached end of file before end of indexed unbundle module table.");
+                    }
+
+                    var startupCodeBuffer = new byte[startupCodeSize];
+                    if (accessor.ReadArray<byte>(_baseOffset, startupCodeBuffer, 0, (int)startupCodeSize) < startupCodeSize)
+                    {
+                        throw new InvalidOperationException("Reached end of file before end of startup code.");
+                    }
+
+                    return Encoding.UTF8.GetString(startupCodeBuffer);
+                }
+            }
+
+            public void Dispose()
+            {
+                _mmapFile.Dispose();
+            }
+        }
+#endif
 
         private static bool IsUnbundle(string sourcePath)
         {
@@ -587,6 +668,6 @@ namespace ReactNative.Chakra.Executor
         {
             return Path.Combine(Path.GetDirectoryName(sourcePath), "js-modules");
         }
-        #endregion
+#endregion
     }
 }
