@@ -1,4 +1,4 @@
-using ReactNative.Bridge;
+﻿using ReactNative.Bridge;
 using ReactNative.Common;
 using ReactNative.Chakra.Executor;
 using ReactNative.Modules.Core;
@@ -153,7 +153,7 @@ namespace ReactNative
 
             if (_jsExecutorFactory == null)
             {
-                _jsExecutorFactory = () => new NativeJavaScriptExecutor();
+                _jsExecutorFactory = () => new ChakraJavaScriptExecutor();
             }
 
             return new ReactInstanceManager(
