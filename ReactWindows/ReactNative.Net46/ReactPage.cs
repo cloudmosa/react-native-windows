@@ -202,7 +202,7 @@ namespace ReactNative
             }
 
             // Back button
-            if (e.Key == Key.Back || e.Key == Key.BrowserBack)
+            if (e.Key == Key.BrowserBack)
             {
                 ReactInstanceManager.OnBackPressed();
             }
