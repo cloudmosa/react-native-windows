@@ -31,7 +31,11 @@ namespace ReactNative.Tracing
         /// <returns>The null logging activity builder with a fake Start method.</returns>
         public static LoggingActivityBuilder Trace(int tag, string name)
         {
-            return new LoggingActivityBuilder(ReactNativeWindowsEventSource.INSTANCE, name, tag);
+            try
+            {
+                return new LoggingActivityBuilder(ReactNativeWindowsEventSource.INSTANCE, name, tag);
+            }
+            catch (Exception) { };
         }
 
         /// <summary>
@@ -41,7 +45,11 @@ namespace ReactNative.Tracing
         /// <param name="eventName">The event name.</param>
         public static void Write(int tag, string eventName)
         {
-            ReactNativeWindowsEventSource.INSTANCE.Write(tag, eventName);
+            try
+            {
+                ReactNativeWindowsEventSource.INSTANCE.Write(tag, eventName);
+            }
+            catch (Exception) { };
         }
 
         /// <summary>
@@ -52,7 +60,11 @@ namespace ReactNative.Tracing
         /// <param name="ex">The exception.</param>
         public static void Error(int tag, string eventName, Exception ex)
         {
-            ReactNativeWindowsEventSource.INSTANCE.Error(tag, eventName, ex.ToString());
+            try
+            {
+                ReactNativeWindowsEventSource.INSTANCE.Error(tag, eventName, ex != null ? ex.ToString() : "");
+            }
+            catch (Exception) { };
         }
     }
 
