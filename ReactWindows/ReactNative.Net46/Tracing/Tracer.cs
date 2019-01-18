@@ -35,7 +35,10 @@ namespace ReactNative.Tracing
             {
                 return new LoggingActivityBuilder(ReactNativeWindowsEventSource.INSTANCE, name, tag);
             }
-            catch (Exception) { };
+            catch (Exception)
+            {
+                return null;
+            };
         }
 
         /// <summary>
