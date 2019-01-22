@@ -214,7 +214,6 @@ namespace ReactNative.UIManager
         {
             if (view.AllowDrop == droppable)
                 return;
-
             if (droppable)
             {
                 view.Drop += OnDrop;
@@ -409,8 +408,8 @@ namespace ReactNative.UIManager
         private IDisposable RegisterDragEnterHandler(TFrameworkElement view)
         {
             return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
-                h => view.DragEnter += h,
-                h => view.DragEnter -= h)
+                h => view.PreviewDragEnter += h,
+                h => view.PreviewDragEnter -= h)
                 .Subscribe(e =>
                 {
                     var args = e.EventArgs;
@@ -443,8 +442,8 @@ namespace ReactNative.UIManager
         private IDisposable RegisterDragOverHandler(TFrameworkElement view)
         {
             return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
-                h => view.DragOver += h,
-                h => view.DragOver -= h)
+                h => view.PreviewDragOver += h,
+                h => view.PreviewDragOver -= h)
                 // [0] Handle the DragEventArgs to setup if target view is droppable
                 .Select(e =>
                 {
@@ -499,8 +498,8 @@ namespace ReactNative.UIManager
         private IDisposable RegisterDragLeaveHandler(TFrameworkElement view)
         {
             return Observable.FromEventPattern<DragEventHandler, DragEventArgs>(
-                h => view.DragLeave += h,
-                h => view.DragLeave -= h)
+                h => view.PreviewDragLeave += h,
+                h => view.PreviewDragLeave -= h)
                 .Subscribe(e =>
                 {
                     var args = e.EventArgs;
