@@ -450,7 +450,6 @@ namespace ReactNative.UIManager
 
                     var args = e.EventArgs;
                     args.Effects = DragDropEffects.None;
-                    args.Handled = true;
 
                     JObject data;
                     if (!MakeDragData(view, args, out data))
@@ -458,6 +457,7 @@ namespace ReactNative.UIManager
                     if (IsTargetViewDroppable(view, data))
                     {
                         args.Effects = DragDropEffects.Move;
+                        args.Handled = true;
                     }
                     return Tuple.Create<EventPattern<DragEventArgs>, JObject>(e, data);
                 })
