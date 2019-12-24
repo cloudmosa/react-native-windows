@@ -465,7 +465,7 @@ namespace ReactNative.UIManager
                 // [1] Send event only if position has changed
                 .DistinctUntilChanged(tuple => tuple.Item1.EventArgs.GetPosition(view))
                 // [2] Throttle for 100ms
-                .Sample(TimeSpan.FromMilliseconds(100), DispatcherScheduler.Instance)
+                //.Sample(TimeSpan.FromMilliseconds(100), DispatcherScheduler.Instance)
                 // [3] Send event to JS
                 .Subscribe(tuple =>
                 {

@@ -26,5 +26,13 @@ namespace ReactNative.UIManager
             data.Merge(_data);
             eventEmitter.receiveEvent(ViewTag, EventName, data);
         }
+
+        public override bool CanCoalesce
+        {
+            get
+            {
+                return (_name == "topDragOver");
+            }
+        }
     }
 }
